@@ -1,7 +1,7 @@
 'use strict';
 // Estrutura do aplicativo: barra de servidores, menus, telas (início, amigos, servidores) e perfil.
 import { openProfile, openStatusEditor } from './profile-sheet.js';
-import { mascot } from './mascot.js';
+import { mascot, thinking } from './mascot.js';
 import { $, $$, el, icon, toast, avatar, displayName, copyText, imageToDataUrl, store, isCompact } from './util.js';
 import { D, CFG, on, emit, remember, userById, isFriend, serverById, channelInfo, dmRoom } from './state.js';
 import { api } from './api.js';
@@ -340,7 +340,7 @@ function pageShell(view, title, sub) {
   view.dataset.k = key;
   // celular sem barra de abas: as telas que não são o Início têm "voltar" no topo
   const back = isCompact() && D.view.name !== 'home' && BACK_TO[D.view.name]
-    ? el('button', { class: 'tb-back', type: 'button', 'aria-label': t('call.back'), onClick: () => go(BACK_TO[D.view.name]()) }, icon('i-chev-l', 'ico'), el('span', { text: t(BACK_LABEL[D.view.name] || 'nav.home') }))
+    ? el('button', { class: 'tb-back', type: 'button', 'aria-label': t('call.back'), onClick: () => go(BACK_TO[D.view.name]()) }, icon('i-chev-l', 'ico'), el('span', { text: t(BACK_LABEL[D.view.name] ? BACK_LABEL[D.view.name]() : 'nav.home') }))
     : null;
   view.replaceChildren(
     el('header', { class: 'topbar' + (back ? ' has-back' : '') }, back,
@@ -351,7 +351,7 @@ function pageShell(view, title, sub) {
   return body;
 }
 const BACK_TO = { games: () => 'home', profile: () => 'home', calls: () => 'home', friends: () => (lastView.name === 'profile' ? 'profile' : 'home') };
-const BACK_LABEL = { friends: 'nav.profile' };
+const BACK_LABEL = { friends: () => (lastView.name === 'profile' ? 'nav.profile' : 'nav.home') };
 let homeQuery = '';
 let homeBat = null;
 let homeMascot = null;
@@ -386,7 +386,7 @@ function renderHome() {
   } else if (!convsReady) {
     v.append(bar);
     // carregando: o desenho da lista em cinza
-    v.append(el('div', { class: 'hm-skel', role: 'status', 'aria-label': t('loading') }, ...[40, 30, 46].map(() => el('div', {}, el('span', { class: 'a' }), el('span', { class: 't' }, el('i'), el('i'))))));
+    v.append(thinking(t('thinking')));
   } else {
     v.append(bar);
     const list = el('div', { class: 'hm-list' });
@@ -412,13 +412,13 @@ function renderHomePhone(v) {
   const reqN = D.incoming.length;
   top.className = 'topbar hm-head';
   top.replaceChildren(
-    el('button', { class: 'hm-bat', type: 'button', 'aria-label': t('nav.profile'), title: t('nav.profile'), onClick: () => go('profile') }, homeBat, reqN ? el('span', { class: 'hm-dot', 'aria-label': t('home.reqs') }) : null),
+    el('button', { class: 'hm-bat', type: 'button', 'aria-label': t('nav.profile'), title: t('nav.profile'), 'aria-haspopup': 'menu', onClick: (e) => openBatMenu(e.currentTarget) }, homeBat, reqN ? el('span', { class: 'hm-dot', 'aria-label': t('home.reqs') }) : null),
     el('h1', { class: 'hm-title', text: 'Echo' }),
     el('div', { class: 'hm-acts' },
       el('button', { class: 'hm-ib', type: 'button', title: t('friends.add'), 'aria-label': t('friends.add'), onClick: () => { friendsTab = 'add'; go('friends'); } }, icon('i-plus')),
       el('button', { class: 'hm-ib', type: 'button', title: t('nav.games'), 'aria-label': t('nav.games'), onClick: () => go('games') }, icon('t-games'), pendingInvites() ? el('span', { class: 'hm-dot' }) : null)));
   if (!convsReady) {
-    v.append(el('div', { class: 'hm-skel', role: 'status', 'aria-label': t('loading') }, ...[40, 30, 46].map(() => el('div', {}, el('span', { class: 'a' }), el('span', { class: 't' }, el('i'), el('i'))))));
+    v.append(thinking(t('thinking')));
     return;
   }
   const at = (f) => ((lastOf(f.id) || {}).at || 0);
@@ -426,8 +426,45 @@ function renderHomePhone(v) {
   const pins = [...D.friends].sort((a, b) => (score(b) - score(a)) || (at(b) - at(a))).slice(0, 4);
   const pinIds = new Set(pins.map((f) => f.id));
   v.append(el('div', { class: 'hm-pins' }, ...pins.map(pinTile)));
-  const rest = D.friends.filter((f) => !pinIds.has(f.id)).sort((a, b) => (isRinging(b.id) - isRinging(a.id)) || (at(b) - at(a)));
-  if (rest.length) v.append(el('div', { class: 'hm-list flat' }, ...rest.map(convRow)));
+  // conversas: todas que já têm mensagem (fixadas também), a mais recente primeiro; quem nunca falou e não está
+  // fixado também entra no fim, para ninguém sumir
+  void pinIds;
+  const convs = D.friends.filter((f) => lastOf(f.id) || !pinIds.has(f.id)).sort((a, b) => (isRinging(b.id) - isRinging(a.id)) || (at(b) - at(a)));
+  if (convs.length) v.append(el('div', { class: 'section-h hm-sh', text: t('side.convs') }), el('div', { class: 'hm-list flat' }, ...convs.map(convRow)));
+}
+/* Menu do morcego (celular): cresce do canto, preso a ele. Perfil, status com um toque, amigos, convite e Configurações. */
+let batMenu = null;
+function closeBatMenu() {
+  const m = batMenu; if (!m) return; batMenu = null;
+  m.box.classList.add('out'); m.scrim.classList.add('out');
+  document.removeEventListener('keydown', m.onKey, true);
+  setTimeout(() => { m.box.remove(); m.scrim.remove(); }, 200);
+}
+function openBatMenu(anchor) {
+  if (batMenu) { closeBatMenu(); return; }
+  const me = D.me;
+  const act = (run) => () => { closeBatMenu(); setTimeout(run, 60); };
+  const row = (ic, label, run, extra) => el('button', { class: 'bm-r', type: 'button', role: 'menuitem', onClick: act(run) }, icon(ic, 'ico'), el('span', { class: 'grow', text: label }), extra || null);
+  const stats = el('div', { class: 'bm-st', role: 'radiogroup', 'aria-label': t('pf.stTitle') });
+  const paint = () => stats.replaceChildren(...['online', 'away', 'busy', 'invisible'].map((st) => el('button', { type: 'button', role: 'radio', dataset: { status: st }, 'aria-checked': String((D.me.status || 'online') === st),
+    onClick: async () => { try { const j = await api('PATCH', '/me', { status: st }); remember(j.user); paint(); renderSoft(); } catch (e) { toast(tErr(e.code)); } } }, el('i'), el('span', { text: t('status.' + st) }))));
+  paint();
+  const box = el('div', { class: 'bm', role: 'menu', 'aria-label': t('nav.profile') },
+    el('button', { class: 'bm-me', type: 'button', role: 'menuitem', onClick: act(() => go('profile')) }, avatar(me, 'md', { decoration: false }),
+      el('span', { class: 'grow' }, el('b', { text: displayName(me) }), el('small', { text: t('pf.view') })), icon('i-chev', 'ico chev')),
+    stats,
+    el('div', { class: 'bm-g' },
+      row('i-users', t('nav.friends'), () => { friendsTab = D.incoming.length ? 'pending' : 'all'; go('friends'); }, D.incoming.length ? el('span', { class: 'badge-n', text: String(D.incoming.length) }) : null),
+      row('i-link', t('pf.invite'), () => copyText(friendLink()).then(() => toast(t('copied')))),
+      row('i-gear', t('set.title'), () => openSettingsFn())));
+  const scrim = el('div', { class: 'bm-scrim', onClick: closeBatMenu });
+  const r = anchor.getBoundingClientRect();
+  box.style.left = Math.max(10, r.left - 4) + 'px';
+  box.style.top = (r.bottom + 6) + 'px';
+  document.body.append(scrim, box);
+  const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); closeBatMenu(); } };
+  document.addEventListener('keydown', onKey, true);
+  batMenu = { box, scrim, onKey };
 }
 function pinTile(f) {
   const n = unreadOf(f.id), typing = isTyping(f.id), ringing = isRinging(f.id);
@@ -512,7 +549,6 @@ function renderFriends() {
   for (const [id, label, n] of [['all', t('friends.all')], ['pending', t('friends.pending'), D.incoming.length], ['add', t('friends.add')]]) {
     tabs.append(el('button', { type: 'button', role: 'tab', 'aria-selected': String(friendsTab === id), onClick: () => { friendsTab = id; renderFriends(); } }, label, n ? el('span', { class: 'count', text: n }) : null));
   }
-  if (isCompact()) v.append(el('button', { class: 'pg-back', type: 'button', onClick: () => go('profile') }, icon('i-back'), el('span', { text: t('nav.profile') })));
   v.append(tabs);
   void pend;
 
@@ -670,10 +706,8 @@ function renderProfile() {
       li(t('nav.friends'), () => go('friends'), el('span', { class: 'pfl-r' }, D.incoming.length ? cnt(D.incoming.length, true) : cnt(D.friends.length), icon('i-chev', 'ico chev'))),
       li(t('pf.invite'), () => copyText(friendLink()).then(() => toast(t('copied'))), icon('i-link', 'ico chev')),
       li(t('set.title'), () => openSettingsFn())),
-    el('div', { class: 'pfl-g' },
-      ...(D.accounts || []).map((a) => li('@' + a.username, () => emit('switch-account', a.id), el('span', { class: 'pfl-v', text: t('acc.use') }))),
-      li(t('acc.add'), () => emit('add-account'), null),
-      li(t('auth.logout'), () => emit('logout'), null, 'danger'))].filter(Boolean));
+    // contas e "Sair" ficam nas Configurações (sem repetir aqui)
+  ].filter(Boolean));
 }
 
 function toggleSelfPopover(anchor, sheet) {

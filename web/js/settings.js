@@ -481,6 +481,7 @@ addDict('pt', {
   'set.update': 'Atualizações', 'upd.site': 'Echo', 'upd.site.d': 'Confere se tem versão nova do Echo e instala na hora.',
   'upd.force': 'Procurar atualização', 'upd.forcing': 'Atualizando…', 'upd.app': 'Echo para computador', 'upd.ver': 'Versão {v}',
   'upd.check': 'Procurar atualização', 'upd.checking': 'Procurando…', 'upd.none': 'Você está na versão mais nova.', 'upd.dl': 'Baixando a versão {v}… {p}%',
+  'sc.search': 'Buscar ajuste', 'sc.personalize': 'Personalize o perfil', 'sc.ns': 'Supressão de ruído', 'sc.voiceMore': 'Microfone, saída e mais', 'sc.voiceTitle': 'Voz e vídeo', 'sc.general': 'Geral', 'sc.accounts': 'Contas', 'sc.none': 'Nenhum ajuste com esse nome.',
   'upd.sitever': '(versão aberta: {v})', 'upd.news': 'Novidades', 'upd.done': 'Echo atualizado.', 'upd.ready': 'A versão {v} está pronta.', 'upd.restart': 'Reiniciar e atualizar', 'upd.err': 'Não deu para atualizar: {e}',
   'desk.title': 'No computador', 'desk.ctl': 'Deixar pedirem controle', 'desk.ctl.d': 'Quem assiste a sua tela pode pedir para usar o mouse e o teclado. Cada pedido abre uma janela para você permitir.',
   'desk.login': 'Abrir ao ligar o computador', 'desk.key': 'Atalho para parar o controle', 'desk.get': 'Baixar o Echo para computador', 'desk.get.d': 'Som de cada app na transmissão e controle remoto.',
@@ -489,6 +490,7 @@ addDict('en', {
   'set.update': 'Updates', 'upd.site': 'Echo', 'upd.site.d': 'Checks for a newer Echo and installs it right away.',
   'upd.force': 'Check for updates', 'upd.forcing': 'Updating…', 'upd.app': 'Echo for desktop', 'upd.ver': 'Version {v}',
   'upd.check': 'Check for updates', 'upd.checking': 'Checking…', 'upd.none': 'You have the newest version.', 'upd.dl': 'Downloading version {v}… {p}%',
+  'sc.search': 'Search settings', 'sc.personalize': 'Personalize your profile', 'sc.ns': 'Noise suppression', 'sc.voiceMore': 'Microphone, output and more', 'sc.voiceTitle': 'Voice and video', 'sc.general': 'General', 'sc.accounts': 'Accounts', 'sc.none': 'No setting by that name.',
   'upd.sitever': '(open version: {v})', 'upd.news': "What's new", 'upd.done': 'Echo updated.', 'upd.ready': 'Version {v} is ready.', 'upd.restart': 'Restart and update', 'upd.err': "Couldn't update: {e}",
   'desk.title': 'On this computer', 'desk.ctl': 'Allow control requests', 'desk.ctl.d': 'People watching your screen can ask to use your mouse and keyboard. Each request opens a window for you to allow.',
   'desk.login': 'Open at login', 'desk.key': 'Shortcut to stop control', 'desk.get': 'Get Echo for desktop', 'desk.get.d': 'Per-app sound when sharing and remote control.',
@@ -594,6 +596,61 @@ function pageUpdate() {
 }
 
 /* ───────────── abrir / fechar ───────────── */
+/* Celular: a tela inicial das Configurações (modelo C). Busca no topo, o cartão "Personalize o perfil",
+   Voz e vídeo resolvidos ali mesmo (supressão de ruído e volume do microfone), o resto em grupos e as contas. */
+function settingsHome() {
+  const me = D.me;
+  const box = el('div', { class: 'sc' });
+  const q = el('input', { type: 'search', class: 'sc-q', placeholder: t('sc.search'), 'aria-label': t('sc.search') });
+  const go = (id) => () => openSettings(id);
+  const navRow = (id, label, value, extra) => {
+    const b = el('button', { class: 'sr sc-row', type: 'button', onClick: go(id) },
+      el('span', { class: 'sr-l' }, el('span', { class: 'sr-t', text: label })),
+      el('span', { class: 'sr-c' }, value ? el('span', { class: 'sc-v', text: value }) : null, extra || null, icon('i-chev', 'ico chev')));
+    b.dataset.k = (label + ' ' + (value || '')).toLowerCase();
+    return b;
+  };
+  const card = el('button', { class: 'sc-card', type: 'button', onClick: go('profile') }, avatar(me, 'lg', { decoration: false }),
+    el('span', { class: 'sc-ct' }, el('b', { text: displayName(me) }), el('small', { text: t('sc.personalize') })), icon('i-chev', 'ico chev'));
+  card.dataset.k = (displayName(me) + ' ' + t('sc.personalize') + ' ' + t('set.profile')).toLowerCase();
+  // supressão de ruído: um seletor só, com as opções lado a lado
+  const modes = [['off', t('ns.off')], ['light', t('ns.light')], ['strong', t('ns.strong')], ['auto', t('ns.auto')]];
+  const seg = el('div', { class: 'sc-seg', role: 'radiogroup', 'aria-label': t('sc.ns') });
+  const paintSeg = () => seg.replaceChildren(...modes.map(([v, l]) => el('button', { type: 'button', role: 'radio', 'aria-checked': String((CFG.nsMode || 'auto') === v), onClick: () => { CFG.nsMode = v; saveCfg(); refreshMic(); paintSeg(); } }, l)));
+  paintSeg();
+  const nsRow = el('div', { class: 'sr sc-ns' }, el('span', { class: 'sr-t', text: t('sc.ns') }), seg);
+  nsRow.dataset.k = (t('sc.ns') + ' ' + t('set.voice') + ' ruído noise').toLowerCase();
+  const vol = rangeRow(t('voice.vol.mic'), 0, 1.5, 0.05, CFG.micVol ?? 1, (v) => Math.round(v * 100) + '%', (v) => { CFG.micVol = v; saveCfg(); setMicVolume({ own: v }); });
+  vol.dataset.k = (t('voice.vol.mic') + ' volume microfone').toLowerCase();
+  const voiceMore = navRow('voice', t('sc.voiceMore'));
+  const langVal = getLang() === 'en' ? 'English' : 'Português';
+  const accts = (D.accounts || []).map((a) => { const b = el('button', { class: 'sr sc-row', type: 'button', onClick: () => { closeSettings(); emit('switch-account', a.id); } },
+    el('span', { class: 'sr-l' }, el('span', { class: 'sc-acc' }, avatar(a, 'xs'), el('span', { class: 'sr-t', text: '@' + a.username }))), el('span', { class: 'sr-c' }, el('span', { class: 'sc-v', text: t('acc.use') })));
+    b.dataset.k = ('@' + a.username + ' ' + t('sc.accounts')).toLowerCase(); return b; });
+  const addAcc = el('button', { class: 'sr sc-row', type: 'button', onClick: () => { closeSettings(); emit('add-account'); } }, el('span', { class: 'sr-l' }, el('span', { class: 'sr-t sc-blue', text: t('acc.add') })));
+  addAcc.dataset.k = (t('acc.add') + ' ' + t('sc.accounts')).toLowerCase();
+  const out = el('button', { class: 'sc-out', type: 'button', onClick: () => { closeSettings(); emit('logout'); } }, t('auth.logout'));
+  const groups = [
+    group(null, null, card),
+    group(t('sc.voiceTitle'), null, nsRow, vol, voiceMore),
+    group(t('sc.general'), null, navRow('notify', t('set.notify')), navRow('appearance', t('set.appearance'), t('theme.' + (CFG.theme || 'noite'))),
+      navRow('stream', t('set.stream')), navRow('language', t('set.language'), langVal), navRow('update', t('set.update'), null, el('span', { class: 'sc-new', text: t('upd.news') }))),
+    group(t('sc.accounts'), null, navRow('account', t('set.account'), '@' + me.username), ...accts, addAcc),
+  ];
+  const none = el('p', { class: 'sc-none', text: t('sc.none'), hidden: true });
+  q.addEventListener('input', () => {
+    const k = q.value.trim().toLowerCase(); let any = false;
+    for (const g of groups) {
+      let vis = 0;
+      for (const r of g.querySelectorAll('[data-k]')) { const ok = !k || r.dataset.k.includes(k); r.hidden = !ok; if (ok) vis++; }
+      g.hidden = !vis; if (vis) any = true;
+    }
+    none.hidden = any; out.hidden = !!k;
+  });
+  box.append(el('label', { class: 'sc-search' }, icon('i-search', 'ico'), q), ...groups, none, out);
+  return box;
+}
+
 const PAGES = [
   ['account', 'i-user', 'set.account', pageAccount], ['profile', 'i-pen', 'set.profile', pageProfile],
   ['voice', 'i-mic', 'set.voice', pageVoice], ['stream', 'i-screen', 'set.stream', pageStream], ['notify', 'i-bell', 'set.notify', pageNotify],
@@ -668,7 +725,7 @@ export function openSettings(page, noAnim) {
   if (def) main.append(el('div', { class: 'set-page', dataset: { p: def[0] } },
     el('header', { class: 'set-hero' }, el('h1', { text: t(def[2]) })),
     ...def[3]()));
-  r.replaceChildren(bar, nav, main);
+  r.replaceChildren(bar, mobile && !current ? el('div', { class: 'set-nav sc-wrap' }, settingsHome()) : nav, main);
   document.removeEventListener('keydown', onKey); document.addEventListener('keydown', onKey);
   if (enter === 'in') play(r, 'in');
   else if (ghost) {

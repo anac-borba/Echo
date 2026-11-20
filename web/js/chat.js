@@ -1,5 +1,6 @@
 // Chat do Echo: conversas diretas com texto, emojis, GIFs, fotos, vídeos, áudios, arquivos,
 // visualização única, responder, reagir, editar e apagar, "visto", "digitando…" e o registro das chamadas.
+import { thinking } from './mascot.js';
 import { localNotify, setBadge } from './notify.js';
 import { $, el, icon, toast, avatar, displayName, store, copyText } from './util.js';
 import { D, CFG, userById, emit, on } from './state.js';
@@ -582,7 +583,7 @@ class ChatView {
     this.panel.replaceChildren(el('div', { class: 'gifpick' }, el('div', { class: 'gif-head' }, q), grid, el('div', { class: 'gif-foot' }, el('span', { class: 'muted', text: 'GIPHY' }), own)));
     let timer;
     const load = async () => {
-      grid.replaceChildren(el('p', { class: 'gif-msg', text: t('chat.gif.loading') }));
+      grid.replaceChildren(thinking(t('thinking'), 'sm'));
       try {
         const j = await api('GET', `/gifs?q=${encodeURIComponent(q.value.trim())}`);
         if (!j.gifs.length) { grid.replaceChildren(el('p', { class: 'gif-msg', text: t('chat.gif.none') })); return; }
@@ -627,7 +628,7 @@ class ChatView {
     const c = S.convs.get(this.uid) || {};
     const list = b.list;
     const out = [];
-    this.older.replaceChildren(b.more && b.loaded ? el('span', { class: 'spin' }) : b.loaded ? el('div', { class: 'cv-start' }, avatar(userById(this.uid) || {}, 'lg'), el('b', { text: displayName(userById(this.uid)) }), el('span', { text: t('chat.start') })) : el('span', { class: 'spin' }));
+    this.older.replaceChildren(b.more && b.loaded ? el('span', { class: 'spin' }) : b.loaded ? el('div', { class: 'cv-start' }, avatar(userById(this.uid) || {}, 'lg'), el('b', { text: displayName(userById(this.uid)) }), el('span', { text: t('chat.start') })) : thinking(t('thinking'), 'sm'));
     let prevDay = null, prev = null;
     const lastMine = [...list].reverse().find((m) => m.author === D.me.id && !m.pending && m.kind !== 'call');
     list.forEach((m, i) => {

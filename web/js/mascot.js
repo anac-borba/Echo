@@ -37,3 +37,26 @@ export function mascot(cls = '') {
   box.addEventListener('click', () => { wake(2500); box.classList.remove('wave'); void box.offsetWidth; box.classList.add('wave'); });
   return box;
 }
+
+/** "Matutando…": o morceguinho pensando (olhar para cima e balançar devagar), para tudo que está carregando. */
+export function thinking(label = 'Matutando…', cls = '') {
+  const wrap = document.createElement('div');
+  wrap.className = 'think ' + cls;
+  wrap.setAttribute('role', 'status');
+  const box = document.createElement('span');
+  box.className = 'mascot-box think-bat';
+  box.setAttribute('aria-hidden', 'true');
+  const dots = document.createElement('span');
+  dots.className = 'think-dots';
+  dots.setAttribute('aria-hidden', 'true');
+  dots.append(document.createElement('i'), document.createElement('i'), document.createElement('i'));
+  const txt = document.createElement('span');
+  txt.className = 'think-t';
+  txt.textContent = label;
+  const fig = document.createElement('span');
+  fig.className = 'think-fig';
+  fig.append(box, dots);
+  wrap.append(fig, txt);
+  requestAnimationFrame(() => { try { mountAvatar(box, { definition: BAT, color: BAT_COLOR, followPointer: false, still: false, mood: 'thinking', label: '' }); } catch (e) { console.warn('mascote', e); } });
+  return wrap;
+}

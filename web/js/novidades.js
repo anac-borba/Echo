@@ -2,11 +2,14 @@
 // Novidades do Echo: o que mudou em cada versão, com um clipe curto das telas novas (em img/novidades/).
 // Para uma versão nova: acrescente um item no começo da lista. Clipes: mp4 curtos (gravados com dev/novidades.cjs).
 // mude junto com VERSION no sw.js: aparece em Configurações › Atualizações para saber qual versão está aberta
-export const SITE_VERSION = '2026-11-20-14';
+export const SITE_VERSION = '2026-11-20-16';
 export const NOVIDADES = [
   {
     date: '2026-11-20',
     items: [
+      { t: 'Menu do morceguinho', d: 'Toque no morcego: seu perfil, o status com um toque (Online, Ausente, Ocupado, Invisível), amigos, convite e Configurações.' },
+      { t: 'Configurações num lugar só', d: 'Supressão de ruído e volume do microfone direto na primeira tela, busca de ajustes e as contas para trocar.' },
+      { t: 'Matutando…', d: 'Quando algo está carregando, o morceguinho fica pensando.' },
       { t: 'Início sem barra de abas', d: 'No celular, o morceguinho no canto abre o Perfil e as Configurações, e o controle abre os Jogos. Quem importa fica fixado no topo em fotos grandes, com o anel verde quando está online.' },
       { t: 'Ligação no celular, do jeito do FaceTime', d: 'Fundo calmo, com a foto, o nome e o tempo no meio. Áudio, Mudo e Desligar ficam sempre à mão; arraste a barra para cima e o resto aparece em lista, como no FaceTime.', clip: '/img/novidades/ligacao.mp4' },
       { t: 'Adicionar amigo mais bonito', d: 'O botão do Início ganhou a cor do morceguinho e um + redondo.' },

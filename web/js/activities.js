@@ -1,4 +1,5 @@
 // Atividades: assistir junto + jogos para dois. Tudo vai por um DataChannel P2P ('act').
+import { thinking } from './mascot.js';
 import { $, el, icon, toast, displayName } from './util.js';
 import { D, on } from './state.js';
 import { t, addDict, onLang } from './i18n.js';
@@ -54,7 +55,7 @@ async function mount(id, starter, init) {
   const def = CATALOG.find((c) => c.id === id); if (!def) return;
   S.cur = { id, starter };
   cssOnce(id);
-  ui.body.replaceChildren(el('div', { class: 'act-loading' }, t('act.loading')));
+  ui.body.replaceChildren(thinking(t('thinking')));
   ui.emoji.textContent = def.emoji; ui.title.textContent = t('act.n.' + id);
   // assistir: sem pipoca nem título, o vídeo fala por si
   ui.emoji.hidden = ui.title.hidden = id === 'watch';
