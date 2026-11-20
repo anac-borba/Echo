@@ -13,7 +13,7 @@ case "$(uname -s)" in
     codesign --force --sign - bin/echo-helper
     ;;
   MINGW*|MSYS*|CYGWIN*)
-    cd win && cl //nologo //O2 //EHsc //std:c++17 //W3 echo-helper.cpp //Fe:../bin/echo-helper.exe //link ole32.lib user32.lib mmdevapi.lib && rm -f *.obj
+    cd win && MSYS_NO_PATHCONV=1 cl -nologo -O2 -EHsc -std:c++17 -W3 echo-helper.cpp -Fe..\\bin\\echo-helper.exe -link ole32.lib user32.lib mmdevapi.lib && rm -f *.obj
     ;;
   *) echo "sistema sem programa auxiliar"; exit 0 ;;
 esac

@@ -21,9 +21,9 @@ jobs:
         run: |
           set +e
           L="$GITHUB_WORKSPACE/log-${{ runner.os }}.txt"
-          { bash desktop/helper/build.sh 2>&1; echo "== exit helper $?"; } > "$L"
-          if [ "$RUNNER_OS" = macOS ]; then { printf 'ping\nlist\nquit\n' | desktop/helper/bin/echo-helper | strings; } >> "$L" 2>&1; fi
-          if [ "$RUNNER_OS" = Windows ]; then { printf 'ping\nlist\nquit\n' | desktop/helper/bin/echo-helper.exe | strings; } >> "$L" 2>&1; fi
+          { bash desktop/helper/build.sh 2>&1; echo "== exit helper $?"; } > "$L"; cat "$L"
+          if [ "$RUNNER_OS" = macOS ]; then { (printf 'ping\nlist\n'; sleep 3; printf 'quit\n') | desktop/helper/bin/echo-helper | strings; } >> "$L" 2>&1; fi
+          if [ "$RUNNER_OS" = Windows ]; then { (printf 'ping\nlist\n'; sleep 3; printf 'quit\n') | desktop/helper/bin/echo-helper.exe | strings; } >> "$L" 2>&1; fi
           exit 0
       - name: Guardar registro
         shell: bash
