@@ -1,0 +1,85 @@
+/* Banco Imobiliário (monopoly) */
+.g-mono { --gm-0: #e8334a; --gm-1: #2f80ed; display: grid; gap: 12px; padding: 10px 8px 16px; max-width: 1100px; margin: 0 auto; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.g-mono-boardwrap { min-width: 0; }
+.g-mono-board { position: relative; display: grid; grid-template: repeat(11, 1fr) / repeat(11, 1fr); aspect-ratio: 1; width: min(100%, calc(100dvh - 120px)); margin: 0 auto; background: var(--surface2); border-radius: var(--r-md); box-shadow: 0 0 0 2px var(--line), var(--shadow); overflow: hidden; container-type: inline-size; }
+.g-mono-side { display: grid; gap: 10px; min-width: 0; }
+.g-mono-players { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (min-width: 900px) {
+  .g-mono { grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 16px; }
+  .g-mono-players { grid-template-columns: 1fr; }
+}
+
+/* casas */
+.g-mono-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-width: 0; min-height: 0; overflow: hidden; background: var(--surface); box-shadow: inset 0 0 0 .5px var(--line); cursor: pointer; font-size: clamp(6px, 2cqw, 12px); font-weight: 700; color: var(--text); }
+.g-mono-cell:hover { background: var(--surface2); }
+.g-mono-cell.sel { z-index: 2; box-shadow: inset 0 0 0 2px var(--accent); }
+.g-mono-cell[data-own="0"]::after, .g-mono-cell[data-own="1"]::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 15%; }
+.g-mono-cell[data-own="0"]::after { background: var(--gm-0); }
+.g-mono-cell[data-own="1"]::after { background: var(--gm-1); }
+.g-mono-band { display: block; width: 100%; height: 26%; flex: none; }
+.g-mono-lab { display: grid; place-items: center; flex: 1; width: 100%; text-align: center; line-height: 1; letter-spacing: -.02em; padding: 0 1px; overflow: hidden; }
+.g-mono-corner { background: var(--bg2); }
+.g-mono-corner .g-mono-lab { font-size: 1.15em; }
+.g-mono-t-st .g-mono-lab, .g-mono-t-ut .g-mono-lab { color: var(--muted); }
+.g-mono-t-card { background: color-mix(in srgb, var(--warn) 22%, var(--surface)); }
+.g-mono-t-card .g-mono-lab { font-size: 1.8em; color: var(--warn); }
+.g-mono-t-tax { background: color-mix(in srgb, var(--bad) 14%, var(--surface)); }
+.g-mono-t-gojail .g-mono-lab { color: var(--bad); }
+.g-mono-hs { position: absolute; left: 0; right: 0; top: 2%; display: flex; justify-content: center; gap: 1px; z-index: 1; pointer-events: none; }
+.g-mono-hs i { display: block; width: 18%; aspect-ratio: 1; background: var(--ok); border-radius: 2px; box-shadow: 0 0 0 .5px rgba(0,0,0,.4); }
+.g-mono-hs i.hot { width: 46%; aspect-ratio: 1.6; background: var(--bad); }
+
+/* cores dos grupos (faixa, chip, detalhe) */
+.g-mono-grp0 { --gc: #8d5a3b; } .g-mono-grp1 { --gc: #5bc0eb; } .g-mono-grp2 { --gc: #d946a8; } .g-mono-grp3 { --gc: #f08a24; }
+.g-mono-grp4 { --gc: #e5484d; } .g-mono-grp5 { --gc: #f2c230; } .g-mono-grp6 { --gc: #30a85b; } .g-mono-grp7 { --gc: #2b4fc7; }
+.g-mono-band.g-mono-grp0, .g-mono-band.g-mono-grp1, .g-mono-band.g-mono-grp2, .g-mono-band.g-mono-grp3, .g-mono-band.g-mono-grp4, .g-mono-band.g-mono-grp5, .g-mono-band.g-mono-grp6, .g-mono-band.g-mono-grp7 { background: var(--gc); }
+.g-mono-cell[class*="g-mono-grp"] > .g-mono-band { background: var(--gc); }
+
+/* peões */
+.g-mono-peg { position: absolute; width: 9.0909%; height: 9.0909%; display: grid; place-items: center; z-index: 5; pointer-events: none; transition: left .14s var(--ease), top .14s var(--ease); }
+.g-mono-peg > i { display: grid; place-items: center; width: 58%; aspect-ratio: 1; border-radius: 50%; font-style: normal; font-weight: 700; font-size: clamp(7px, 2cqw, 14px); color: #fff; box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0,0,0,.45); }
+.g-mono-peg0 > i { background: var(--gm-0); transform: translate(-18%, -18%); }
+.g-mono-peg1 > i { background: var(--gm-1); transform: translate(18%, 18%); }
+.g-mono-dot.g-mono-peg { position: static; display: inline-block; width: 12px; height: 12px; border-radius: 50%; transition: none; flex: none; }
+.g-mono-dot.g-mono-peg0 { background: var(--gm-0); } .g-mono-dot.g-mono-peg1 { background: var(--gm-1); }
+
+/* centro */
+.g-mono-center { grid-area: 2 / 2 / 11 / 11; display: grid; grid-template-rows: auto auto 1fr auto; justify-items: center; align-content: center; gap: 2cqw; padding: 3cqw; text-align: center; background: color-mix(in srgb, var(--accent) 6%, var(--bg2)); }
+.g-mono-banner { font-weight: 700; font-size: clamp(14px, 4.4cqw, 26px); letter-spacing: -.01em; }
+.g-mono-banner.mine { color: var(--accent); } .g-mono-banner.win { color: var(--ok); } .g-mono-banner.lose { color: var(--bad); }
+.g-mono-dice { display: flex; gap: 3cqw; }
+.g-mono-die { display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); width: clamp(34px, 10cqw, 60px); aspect-ratio: 1; padding: 11%; background: #fff; border-radius: 22%; box-shadow: 0 0 0 1.5px rgba(0,0,0,.15), 0 4px 10px rgba(0,0,0,.22); }
+.g-mono-die i { place-self: center; width: 78%; aspect-ratio: 1; border-radius: 50%; }
+.g-mono-die i.on { background: #222; }
+.g-mono-die.roll { animation: g-mono-shake .14s linear infinite; }
+@keyframes g-mono-shake { 0% { transform: rotate(-9deg) translateY(1px); } 50% { transform: rotate(9deg) translateY(-2px); } 100% { transform: rotate(-9deg) translateY(1px); } }
+.g-mono-evt { align-self: center; font-size: clamp(11px, 2.9cqw, 15px); line-height: 1.3; color: var(--text); max-width: 100%; overflow-wrap: anywhere; }
+.g-mono-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-height: 36px; align-items: center; }
+.g-mono-wait { font-size: .85rem; }
+
+/* painéis */
+.g-mono-pl { background: var(--surface); border-radius: var(--r-md); padding: 8px 10px; box-shadow: 0 0 0 1px var(--line); display: grid; gap: 6px; align-content: start; min-width: 0; }
+.g-mono-pl.turn { box-shadow: 0 0 0 2px var(--accent); }
+.g-mono-pl.out { opacity: .55; }
+.g-mono-plhead { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.g-mono-plname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; }
+.g-mono-cash { font-weight: 700; font-variant-numeric: tabular-nums; font-size: .95rem; color: var(--ok); white-space: nowrap; }
+.g-mono-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.g-mono-badges:empty { display: none; }
+.g-mono-badge { font-size: .68rem; font-weight: 700; padding: 2px 7px; border-radius: 99px; background: var(--surface2); color: var(--muted); }
+.g-mono-badge.bad { background: color-mix(in srgb, var(--bad) 20%, var(--surface)); color: var(--bad); }
+.g-mono-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.g-mono-none { font-size: .78rem; }
+.g-mono-chip { position: relative; border: 0; border-radius: 6px; padding: 2px 5px; font-size: .64rem; font-weight: 700; background: var(--surface2); color: var(--text); box-shadow: inset 0 -3px 0 var(--gc, var(--muted)); }
+.g-mono-chip.sel { outline: 2px solid var(--accent); }
+.g-mono-chip small { margin-left: 3px; color: var(--ok); font-weight: 700; }
+.g-mono-chip-st, .g-mono-chip-ut { --gc: var(--muted); }
+.g-mono-detail { background: var(--surface); border-radius: var(--r-md); padding: 10px 12px; box-shadow: 0 0 0 1px var(--line); display: grid; gap: 6px; justify-items: start; }
+.g-mono-dhead { display: flex; align-items: center; gap: 8px; }
+.g-mono-dband { display: block; width: 14px; height: 22px; border-radius: 4px; background: var(--gc, var(--muted)); }
+.g-mono-dlines { display: grid; gap: 2px; font-size: .82rem; color: var(--muted); }
+.g-mono-logwrap { background: var(--surface); border-radius: var(--r-md); padding: 8px 10px; box-shadow: 0 0 0 1px var(--line); }
+.g-mono-loghead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.g-mono-log { max-height: 170px; overflow-y: auto; display: grid; gap: 2px; align-content: start; }
+.g-mono-logline { font-size: .78rem; color: var(--muted); padding: 2px 0; }
+.g-mono-logline.new { color: var(--text); font-weight: 700; }

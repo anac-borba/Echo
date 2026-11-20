@@ -1,0 +1,17 @@
+Efeitos sonoros do Echo — gravações reais do Freesound (via pacote "Sound Monster", github.com/jonjonsson/SoundMonster).
+Cortados, em mono e com volume igualado. Domínio público (CC0), exceto onde indicado.
+
+applause.mp3    — Sandermotions, freesound.org/s/277021 (CC0)
+airhorn.mp3     — pfranzen, freesound.org/s/528807 (CC0)
+rimshot.mp3     — Simon_Lacelle, freesound.org/s/37215 (CC BY 4.0)
+sadtrombone.mp3 — TaranP, freesound.org/s/362205 (CC0)
+crickets.mp3    — guitarguy1985, freesound.org/s/69439 (CC0)
+tada.mp3        — unadamlar, freesound.org/s/341985 (CC0)
+wrong.mp3       — guitarguy1985, freesound.org/s/54047 (CC0)
+ding.mp3        — 5ro4, freesound.org/s/611113 (CC0)
+suspense.mp3    — copyc4t, freesound.org/s/146434 (CC BY 4.0)
+boom.mp3        — unfa, freesound.org/s/647712 (CC0)
+drumroll.mp3    — El_Has, freesound.org/s/523900 (CC0)
+boing.mp3       — suzenako, freesound.org/s/537060 (CC0)
+laugh.mp3       — Evil_Ear_Recordings, freesound.org/s/524775 (CC0)
+wow.mp3         — Alivvie, freesound.org/s/323438 (CC0)

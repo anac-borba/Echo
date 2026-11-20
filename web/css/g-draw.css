@@ -1,0 +1,43 @@
+/* Desenhar juntas */
+.g-draw { display: grid; gap: 12px; max-width: 1000px; margin: 0 auto; padding: 12px 14px 22px; }
+.g-draw-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 10px 12px;
+  background: var(--surface); border-radius: var(--r-lg); box-shadow: 0 0 0 1px var(--line);
+}
+.g-draw-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.g-draw-colors { gap: 7px; max-width: 330px; }
+.g-draw-actions { margin-left: auto; }
+.g-draw-tool {
+  display: inline-flex; align-items: center; gap: 6px; border: 0; background: var(--surface2); color: var(--muted);
+  padding: 8px 12px; min-height: 40px; border-radius: var(--r-sm); font-weight: 600; font-size: .92rem;
+}
+.g-draw-tool .ico { width: 18px; height: 18px; }
+.g-draw-tool[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.g-draw-erasericon {
+  width: 16px; height: 12px; border-radius: 3px; background: currentColor; transform: rotate(-30deg); opacity: .85; flex: none;
+}
+.g-draw-wbtn {
+  width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: var(--surface2);
+}
+.g-draw-wbtn[aria-pressed="true"] { box-shadow: 0 0 0 2.5px var(--accent) inset; }
+.g-draw-dot { display: block; border-radius: 50%; background: var(--text); }
+.g-draw-sw {
+  width: 30px; height: 30px; border-radius: 50%; border: 0; padding: 0;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--text) 25%, transparent) inset;
+  transition: transform .12s var(--ease);
+}
+.g-draw-sw[aria-pressed="true"] { transform: scale(1.12); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4.5px var(--accent); }
+.g-draw-stage { background: var(--surface2); border-radius: var(--r-lg); padding: 8px; }
+.g-draw-canvas {
+  display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; background: #fff; border-radius: var(--r-md);
+  touch-action: none; cursor: crosshair; user-select: none; -webkit-user-select: none; box-shadow: 0 0 0 1px var(--line);
+}
+.g-draw-status { margin: 0; text-align: center; font-size: .88rem; min-height: 1.3em; }
+@media (max-width: 560px) {
+  .g-draw { padding: 8px 8px 18px; gap: 8px; }
+  .g-draw-actions { margin-left: 0; width: 100%; }
+  .g-draw-actions .btn { flex: 1; }
+  .g-draw-colors { max-width: none; }
+  .g-draw-stage { padding: 5px; }
+}

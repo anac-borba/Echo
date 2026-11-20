@@ -1,0 +1,129 @@
+/* Temas extras do Echo (nomes e cores próprios). Cada um define o mesmo conjunto de variáveis do base.css. */
+:root[data-theme="carvao"] {
+  --bg: #000000; --bg2: #0A0A0B; --surface: #141416; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #F5F5F7; --muted: rgba(245,245,247,0.6);
+  --accent: #9D8CFF; --accent-ink: #9D8CFF; --on-accent: #fff; --inv: #000000; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(20,20,22,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: none; --bub-them: #1A1A1D; --logo1: #141416; --logo2: #0A0A0B;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(157,140,255,0.35), #000000 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #9D8CFF 72%, #fff), #9D8CFF); --bub-ink: #fff;
+  color-scheme: dark;
+}
+:root[data-theme="meianoite"] {
+  --bg: #0B1020; --bg2: #0F1528; --surface: #161D33; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #EEF1FA; --muted: rgba(238,241,250,0.6);
+  --accent: #5B8CFF; --accent-ink: #5B8CFF; --on-accent: #fff; --inv: #0B1020; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(22,29,51,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: none; --bub-them: #1B2340; --logo1: #161D33; --logo2: #0F1528;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(91,140,255,0.35), #0B1020 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #5B8CFF 72%, #fff), #5B8CFF); --bub-ink: #fff;
+  color-scheme: dark;
+}
+:root[data-theme="floresta"] {
+  --bg: #0C1411; --bg2: #101A16; --surface: #16231E; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #ECF5F0; --muted: rgba(236,245,240,0.6);
+  --accent: #3DD68C; --accent-ink: #3DD68C; --on-accent: #06210F; --inv: #0C1411; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(22,35,30,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: none; --bub-them: #1B2B24; --logo1: #16231E; --logo2: #101A16;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(61,214,140,0.35), #0C1411 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #3DD68C 72%, #fff), #3DD68C); --bub-ink: #06210F;
+  color-scheme: dark;
+}
+:root[data-theme="vinho"] {
+  --bg: #160B10; --bg2: #1C0F15; --surface: #25141C; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #F8EEF2; --muted: rgba(248,238,242,0.6);
+  --accent: #FF5C8A; --accent-ink: #FF5C8A; --on-accent: #fff; --inv: #160B10; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(37,20,28,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: none; --bub-them: #2E1822; --logo1: #25141C; --logo2: #1C0F15;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(255,92,138,0.35), #160B10 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #FF5C8A 72%, #fff), #FF5C8A); --bub-ink: #fff;
+  color-scheme: dark;
+}
+:root[data-theme="cafe"] {
+  --bg: #15100C; --bg2: #1B1510; --surface: #241C16; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #F6EFE8; --muted: rgba(246,239,232,0.6);
+  --accent: #E0A060; --accent-ink: #E0A060; --on-accent: #2A1806; --inv: #15100C; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(36,28,22,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: none; --bub-them: #2D241C; --logo1: #241C16; --logo2: #1B1510;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(224,160,96,0.35), #15100C 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #E0A060 72%, #fff), #E0A060); --bub-ink: #2A1806;
+  color-scheme: dark;
+}
+:root[data-theme="menta"] {
+  --bg: #EEF8F3; --bg2: #E4F3EB; --surface: #FFFFFF; --surface2: rgba(16,41,29,0.055); --card: #ffffff; --line: rgba(16,41,29,0.1); --text: #10291D; --muted: rgba(16,41,29,0.64);
+  --accent: #15A36B; --accent-ink: #15A36B; --on-accent: #fff; --inv: #EEF8F3; --ok-ink: #1F9E45; --bad: #FF3B30; --glass: rgba(255,255,255,0.84); --shadow: 0 18px 50px rgba(16,41,29,0.14);
+  --bg-fx: none; --bub-them: #FFFFFF; --logo1: #FFFFFF; --logo2: #E4F3EB;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(21,163,107,0.35), #EEF8F3 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #15A36B 72%, #fff), #15A36B); --bub-ink: #fff;
+  color-scheme: light;
+}
+:root[data-theme="lavanda"] {
+  --bg: #F3F0FF; --bg2: #EAE5FF; --surface: #FFFFFF; --surface2: rgba(36,26,74,0.055); --card: #ffffff; --line: rgba(36,26,74,0.1); --text: #241A4A; --muted: rgba(36,26,74,0.64);
+  --accent: #7458F0; --accent-ink: #7458F0; --on-accent: #fff; --inv: #F3F0FF; --ok-ink: #1F9E45; --bad: #FF3B30; --glass: rgba(255,255,255,0.84); --shadow: 0 18px 50px rgba(36,26,74,0.14);
+  --bg-fx: none; --bub-them: #FFFFFF; --logo1: #FFFFFF; --logo2: #EAE5FF;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(116,88,240,0.35), #F3F0FF 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #7458F0 72%, #fff), #7458F0); --bub-ink: #fff;
+  color-scheme: light;
+}
+:root[data-theme="areia"] {
+  --bg: #F6F0E6; --bg2: #EFE6D8; --surface: #FFFCF6; --surface2: rgba(46,36,22,0.055); --card: #ffffff; --line: rgba(46,36,22,0.1); --text: #2E2416; --muted: rgba(46,36,22,0.64);
+  --accent: #B4692B; --accent-ink: #B4692B; --on-accent: #fff; --inv: #F6F0E6; --ok-ink: #1F9E45; --bad: #FF3B30; --glass: rgba(255,252,246,0.84); --shadow: 0 18px 50px rgba(46,36,22,0.14);
+  --bg-fx: none; --bub-them: #FFFCF6; --logo1: #FFFCF6; --logo2: #EFE6D8;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(180,105,43,0.35), #F6F0E6 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #B4692B 72%, #fff), #B4692B); --bub-ink: #fff;
+  color-scheme: light;
+}
+:root[data-theme="ceu"] {
+  --bg: #EEF5FF; --bg2: #E2EDFD; --surface: #FFFFFF; --surface2: rgba(15,33,64,0.055); --card: #ffffff; --line: rgba(15,33,64,0.1); --text: #0F2140; --muted: rgba(15,33,64,0.64);
+  --accent: #2F7BF6; --accent-ink: #2F7BF6; --on-accent: #fff; --inv: #EEF5FF; --ok-ink: #1F9E45; --bad: #FF3B30; --glass: rgba(255,255,255,0.84); --shadow: 0 18px 50px rgba(15,33,64,0.14);
+  --bg-fx: none; --bub-them: #FFFFFF; --logo1: #FFFFFF; --logo2: #E2EDFD;
+  --show-bg: radial-gradient(90% 80% at 20% 10%, rgba(47,123,246,0.35), #EEF5FF 70%);
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #2F7BF6 72%, #fff), #2F7BF6); --bub-ink: #fff;
+  color-scheme: light;
+}
+:root[data-theme="aurora"] {
+  --bg: #08141A; --bg2: #0B1A21; --surface: #11242C; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #EAF7F7; --muted: rgba(234,247,247,0.6);
+  --accent: #3EE0C0; --accent-ink: #3EE0C0; --on-accent: #04201A; --inv: #08141A; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(17,36,44,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: radial-gradient(80% 60% at 0% 0%, rgba(40,200,170,.35), transparent 65%), radial-gradient(70% 60% at 100% 100%, rgba(120,80,255,.35), transparent 65%); --bub-them: #152C35; --logo1: #11242C; --logo2: #0B1A21;
+  --show-bg: radial-gradient(80% 60% at 0% 0%, rgba(40,200,170,.35), transparent 65%), radial-gradient(70% 60% at 100% 100%, rgba(120,80,255,.35), transparent 65%), #08141A;
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #3EE0C0 72%, #fff), #3EE0C0); --bub-ink: #04201A;
+  color-scheme: dark;
+}
+:root[data-theme="crepusculo"] {
+  --bg: #160D18; --bg2: #1B1020; --surface: #24152A; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #FBEFF4; --muted: rgba(251,239,244,0.6);
+  --accent: #FF7A59; --accent-ink: #FF7A59; --on-accent: #fff; --inv: #160D18; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(36,21,42,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: radial-gradient(80% 60% at 0% 0%, rgba(255,110,80,.32), transparent 65%), radial-gradient(70% 60% at 100% 100%, rgba(220,60,160,.32), transparent 65%); --bub-them: #2E1B33; --logo1: #24152A; --logo2: #1B1020;
+  --show-bg: radial-gradient(80% 60% at 0% 0%, rgba(255,110,80,.32), transparent 65%), radial-gradient(70% 60% at 100% 100%, rgba(220,60,160,.32), transparent 65%), #160D18;
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #FF7A59 72%, #fff), #FF7A59); --bub-ink: #fff;
+  color-scheme: dark;
+}
+:root[data-theme="oceano"] {
+  --bg: #06121F; --bg2: #081828; --surface: #0E2236; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #E8F3FF; --muted: rgba(232,243,255,0.6);
+  --accent: #33B5FF; --accent-ink: #33B5FF; --on-accent: #002033; --inv: #06121F; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(14,34,54,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: radial-gradient(90% 60% at 50% 0%, rgba(30,140,255,.35), transparent 65%), radial-gradient(70% 50% at 100% 100%, rgba(0,220,220,.25), transparent 65%); --bub-them: #132C44; --logo1: #0E2236; --logo2: #081828;
+  --show-bg: radial-gradient(90% 60% at 50% 0%, rgba(30,140,255,.35), transparent 65%), radial-gradient(70% 50% at 100% 100%, rgba(0,220,220,.25), transparent 65%), #06121F;
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #33B5FF 72%, #fff), #33B5FF); --bub-ink: #002033;
+  color-scheme: dark;
+}
+:root[data-theme="nebulosa"] {
+  --bg: #0E0A1C; --bg2: #130E25; --surface: #1B1531; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #F3EFFF; --muted: rgba(243,239,255,0.6);
+  --accent: #C77DFF; --accent-ink: #C77DFF; --on-accent: #1A0530; --inv: #0E0A1C; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(27,21,49,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: radial-gradient(70% 60% at 10% 10%, rgba(200,80,255,.33), transparent 65%), radial-gradient(60% 50% at 90% 30%, rgba(255,90,170,.25), transparent 65%), radial-gradient(70% 60% at 50% 110%, rgba(70,90,255,.3), transparent 65%); --bub-them: #241C3E; --logo1: #1B1531; --logo2: #130E25;
+  --show-bg: radial-gradient(70% 60% at 10% 10%, rgba(200,80,255,.33), transparent 65%), radial-gradient(60% 50% at 90% 30%, rgba(255,90,170,.25), transparent 65%), radial-gradient(70% 60% at 50% 110%, rgba(70,90,255,.3), transparent 65%), #0E0A1C;
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #C77DFF 72%, #fff), #C77DFF); --bub-ink: #1A0530;
+  color-scheme: dark;
+}
+:root[data-theme="neon"] {
+  --bg: #07070D; --bg2: #0B0B14; --surface: #12121E; --surface2: rgba(255,255,255,.075); --card: rgba(255,255,255,.045); --line: rgba(255,255,255,.09); --text: #F2F2FF; --muted: rgba(242,242,255,0.6);
+  --accent: #FF2E9A; --accent-ink: #FF2E9A; --on-accent: #fff; --inv: #07070D; --ok-ink: #30D158; --bad: #FF453A; --glass: rgba(18,18,30,0.84); --shadow: 0 18px 50px rgba(0,0,0,.6);
+  --bg-fx: radial-gradient(60% 50% at 0% 100%, rgba(255,46,154,.28), transparent 65%), radial-gradient(60% 50% at 100% 0%, rgba(0,229,255,.25), transparent 65%); --bub-them: #171728; --logo1: #12121E; --logo2: #0B0B14;
+  --show-bg: radial-gradient(60% 50% at 0% 100%, rgba(255,46,154,.28), transparent 65%), radial-gradient(60% 50% at 100% 0%, rgba(0,229,255,.25), transparent 65%), #07070D;
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #FF2E9A 72%, #fff), #FF2E9A); --bub-ink: #fff;
+  color-scheme: dark;
+}
+:root[data-theme="pessego"] {
+  --bg: #FFF2EC; --bg2: #FFE8DE; --surface: #FFFFFF; --surface2: rgba(58,28,20,0.055); --card: #ffffff; --line: rgba(58,28,20,0.1); --text: #3A1C14; --muted: rgba(58,28,20,0.64);
+  --accent: #F0643C; --accent-ink: #F0643C; --on-accent: #fff; --inv: #FFF2EC; --ok-ink: #1F9E45; --bad: #FF3B30; --glass: rgba(255,255,255,0.84); --shadow: 0 18px 50px rgba(58,28,20,0.14);
+  --bg-fx: radial-gradient(80% 60% at 0% 0%, rgba(255,170,130,.55), transparent 65%), radial-gradient(70% 60% at 100% 100%, rgba(255,140,190,.45), transparent 65%); --bub-them: #FFFFFF; --logo1: #FFFFFF; --logo2: #FFE8DE;
+  --show-bg: radial-gradient(80% 60% at 0% 0%, rgba(255,170,130,.55), transparent 65%), radial-gradient(70% 60% at 100% 100%, rgba(255,140,190,.45), transparent 65%), #FFF2EC;
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #F0643C 72%, #fff), #F0643C); --bub-ink: #fff;
+  color-scheme: light;
+}
+:root[data-theme="algodao"] {
+  --bg: #F6F2FF; --bg2: #EFE8FF; --surface: #FFFFFF; --surface2: rgba(43,30,70,0.055); --card: #ffffff; --line: rgba(43,30,70,0.1); --text: #2B1E46; --muted: rgba(43,30,70,0.64);
+  --accent: #E0559C; --accent-ink: #E0559C; --on-accent: #fff; --inv: #F6F2FF; --ok-ink: #1F9E45; --bad: #FF3B30; --glass: rgba(255,255,255,0.84); --shadow: 0 18px 50px rgba(43,30,70,0.14);
+  --bg-fx: radial-gradient(80% 60% at 0% 0%, rgba(255,170,215,.55), transparent 65%), radial-gradient(70% 60% at 100% 100%, rgba(160,200,255,.55), transparent 65%); --bub-them: #FFFFFF; --logo1: #FFFFFF; --logo2: #EFE8FF;
+  --show-bg: radial-gradient(80% 60% at 0% 0%, rgba(255,170,215,.55), transparent 65%), radial-gradient(70% 60% at 100% 100%, rgba(160,200,255,.55), transparent 65%), #F6F2FF;
+  --bub-me: linear-gradient(135deg, color-mix(in srgb, #E0559C 72%, #fff), #E0559C); --bub-ink: #fff;
+  color-scheme: light;
+}

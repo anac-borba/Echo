@@ -1,0 +1,13 @@
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob: mediastream: https:; frame-src https://www.youtube-nocookie.com https://player.twitch.tv https://player.kick.com; connect-src 'self' wss: ws://localhost:*; font-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: microphone=(self), display-capture=(self), picture-in-picture=(self), fullscreen=(self), autoplay=(self "https://www.youtube-nocookie.com"), encrypted-media=(self "https://www.youtube-nocookie.com"), camera=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Cache-Control: no-cache
+
+# O service worker pode controlar o site inteiro (o Cache-Control: no-cache de cima já vale para ele).
+/sw.js
+  Service-Worker-Allowed: /

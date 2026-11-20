@@ -1,0 +1,52 @@
+/* Cozinha a dois (estilo Overcooked) */
+.g-chef { display: grid; gap: 10px; max-width: 880px; margin: 0 auto; padding: 10px 12px 22px; }
+.g-chef-hud { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+.g-chef-stat {
+  display: grid; align-content: center; gap: 1px; min-width: 74px; padding: 6px 14px; text-align: center;
+  background: var(--surface); border-radius: var(--r-md); box-shadow: 0 0 0 1px var(--line);
+}
+.g-chef-stat small { font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.g-chef-stat b { font-size: 1.35rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.g-chef-stat b.low { color: var(--bad); animation: g-chef-blink 1s infinite; }
+@keyframes g-chef-blink { 50% { opacity: .45; } }
+.g-chef-orders { flex: 1 1 220px; display: flex; gap: 8px; overflow-x: auto; min-height: 58px; align-items: stretch; padding-bottom: 2px; }
+.g-chef-ticket {
+  flex: 0 0 auto; width: 128px; display: grid; gap: 2px; align-content: start; padding: 7px 9px 8px; font-size: .74rem;
+  background: var(--surface); border-radius: var(--r-sm); box-shadow: 0 0 0 1px var(--line); border-top: 4px solid var(--ok);
+}
+.g-chef-ticket b { font-size: .9rem; }
+.g-chef-ticket span { color: var(--muted); line-height: 1.25; }
+.g-chef-ticket.late { border-top-color: var(--bad); animation: g-chef-blink .8s infinite; }
+.g-chef-tbg { height: 5px; border-radius: 3px; background: var(--surface2); overflow: hidden; margin-top: 4px; }
+.g-chef-tbar { display: block; height: 100%; background: var(--ok); border-radius: 3px; }
+.g-chef-ticket.late .g-chef-tbar { background: var(--bad); }
+.g-chef-stage { position: relative; border-radius: var(--r-md); overflow: hidden; box-shadow: 0 0 0 1px var(--line), var(--shadow); background: #4a4458; line-height: 0; }
+.g-chef-canvas { display: block; width: 100%; height: auto; aspect-ratio: 13 / 9; touch-action: none; }
+.g-chef-ov {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; text-align: center; line-height: 1.35;
+  background: rgba(20, 14, 30, .72); color: #fff; padding: 16px; backdrop-filter: blur(2px);
+}
+.g-chef-ovt { font-size: 1.5rem; letter-spacing: -.01em; }
+.g-chef-ovx { display: grid; gap: 4px; justify-items: center; font-size: .95rem; }
+.g-chef-ovx .muted { color: rgba(255, 255, 255, .72); }
+.g-chef-big { font-size: 3.4rem; font-weight: 700; line-height: 1; }
+.g-chef-pad { display: none; justify-content: space-between; align-items: center; gap: 14px; padding: 4px 6px; user-select: none; -webkit-user-select: none; touch-action: none; }
+@media (pointer: coarse), (max-width: 760px) { .g-chef-pad { display: flex; } }
+.g-chef-joy {
+  position: relative; width: 132px; height: 132px; flex: none; border-radius: 50%; touch-action: none;
+  background: color-mix(in srgb, var(--text) 8%, var(--surface2)); box-shadow: inset 0 0 0 2px var(--line);
+}
+.g-chef-knob {
+  position: absolute; left: 42px; top: 42px; width: 48px; height: 48px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .3); pointer-events: none;
+}
+.g-chef-btns { display: flex; gap: 12px; align-items: center; }
+.g-chef-act {
+  width: 84px; height: 84px; border: 0; border-radius: 50%; font-weight: 700; font-size: .82rem; line-height: 1.15; padding: 4px;
+  background: var(--accent); color: var(--on-accent); box-shadow: 0 5px 0 color-mix(in srgb, var(--accent) 60%, #000);
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; transition: transform .08s, box-shadow .08s;
+}
+.g-chef-act.b { background: #f0a30a; color: #1d1300; box-shadow: 0 5px 0 #a06c00; width: 72px; height: 72px; margin-bottom: 14px; }
+.g-chef-act:active, .g-chef-act.on { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0, 0, 0, .3); }
+.g-chef-hint { margin: 0; font-size: .8rem; text-align: center; }
+@media (max-width: 420px) { .g-chef-joy { width: 118px; height: 118px; } .g-chef-knob { left: 35px; top: 35px; } .g-chef-act { width: 76px; height: 76px; } .g-chef-act.b { width: 66px; height: 66px; } }

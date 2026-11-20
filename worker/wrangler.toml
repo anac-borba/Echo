@@ -1,0 +1,29 @@
+name = "telinha"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# O site (pasta web) e o servidor saem juntos, no mesmo endereço.
+# Só /api, /ws e /events passam pelo código; o resto é arquivo estático.
+[assets]
+directory = "../web"
+run_worker_first = ["/api/*", "/ws", "/events"]
+
+[vars]
+# Quantas contas podem existir. Depois de criadas, o cadastro fecha. 4 = vocês duas + 2 contas de teste.
+MAX_ACCOUNTS = "4"
+
+[[durable_objects.bindings]]
+name = "HUB"
+class_name = "Hub"
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Hub", "Room"]
+
+# Segredos opcionais (wrangler secret put NOME):
+#   SIGNUP_CODE         -> exige um código para criar conta
+#   TURN_KEY_ID e TURN_KEY_API_TOKEN -> conexão reserva (TURN da Cloudflare)

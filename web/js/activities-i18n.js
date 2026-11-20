@@ -1,0 +1,26 @@
+export const DICT_PT = {
+  'act.title': 'Atividades', 'act.end': 'Encerrar', 'act.loading': 'Carregando…', 'act.fail': 'Não consegui abrir essa atividade.',
+  'act.needpeer': 'Espere sua parceira entrar na sala para começar uma atividade.',
+  'act.started': '{who} abriu: {name}', 'act.ended': 'A atividade foi encerrada.',
+  'act.n.watch': 'Assistir juntos', 'act.d.watch': 'YouTube, links de vídeo ou arquivo. Sem transmitir a tela.',
+  'act.n.draw': 'Desenhar juntos', 'act.d.draw': 'Uma tela para todos rabiscarem ao mesmo tempo.',
+  'act.n.gartic': 'Telefone sem fio', 'act.d.gartic': 'Frase, desenho, legenda… e o álbum no fim.',
+  'act.n.wordle': 'Palavra do dia sem fim', 'act.d.wordle': 'Adivinhem a palavra de 5 letras, quantas quiserem.',
+  'act.n.stop': 'Stop', 'act.d.stop': 'Uma letra, várias categorias, vale quem for rápida.',
+  'act.n.tetris': 'Tetris', 'act.d.tetris': 'Duelo de blocos com linhas de lixo.',
+  'act.n.monopoly': 'Banco imobiliário', 'act.d.monopoly': 'Comprem bairros, cobrem aluguel e quebrem a outra.',
+  'act.n.chef': 'Cozinha em dupla', 'act.d.chef': 'Montem pedidos juntos antes do tempo acabar.',
+};
+export const DICT_EN = {
+  'act.title': 'Activities', 'act.end': 'End', 'act.loading': 'Loading…', 'act.fail': 'Could not open this activity.',
+  'act.needpeer': 'Wait for your partner to join the room to start an activity.',
+  'act.started': '{who} opened: {name}', 'act.ended': 'The activity ended.',
+  'act.n.watch': 'Watch together', 'act.d.watch': 'YouTube, video links or a file. No screen sharing.',
+  'act.n.draw': 'Draw together', 'act.d.draw': 'One canvas to scribble on at the same time.',
+  'act.n.gartic': 'Telephone drawing', 'act.d.gartic': 'Phrase, drawing, caption… then the album.',
+  'act.n.wordle': 'Endless word game', 'act.d.wordle': 'Guess the 5-letter word, as many as you like.',
+  'act.n.stop': 'Stop', 'act.d.stop': 'One letter, many categories, fastest wins.',
+  'act.n.tetris': 'Tetris', 'act.d.tetris': 'Block duel with garbage lines.',
+  'act.n.monopoly': 'Property trading', 'act.d.monopoly': 'Buy neighborhoods, charge rent, bankrupt the other.',
+  'act.n.chef': 'Co-op kitchen', 'act.d.chef': 'Assemble orders together before time runs out.',
+};

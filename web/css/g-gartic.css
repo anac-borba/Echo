@@ -1,0 +1,66 @@
+/* Gartic para duas */
+.g-gartic { display: grid; gap: 12px; max-width: 980px; margin: 0 auto; padding: 12px 14px 24px; }
+.g-gartic-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; justify-content: space-between; }
+.g-gartic-title { display: grid; gap: 2px; }
+.g-gartic-title h2 { font-size: 1.35rem; letter-spacing: -.02em; }
+.g-gartic-step { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.g-gartic-dots { display: flex; gap: 6px; }
+.g-gartic-pip { width: 28px; height: 6px; border-radius: 999px; background: color-mix(in srgb, var(--text) 14%, transparent); }
+.g-gartic-pip.done { background: var(--ok); }
+.g-gartic-pip.now { background: var(--accent); }
+.g-gartic-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.g-gartic-chip { background: var(--surface2); border-radius: 999px; padding: 6px 12px; font-size: .86rem; font-weight: 600; color: var(--muted); }
+.g-gartic-chip.ok { background: color-mix(in srgb, var(--ok) 20%, var(--surface2)); color: var(--text); }
+.g-gartic-timer { font-variant-numeric: tabular-nums; color: var(--text); }
+.g-gartic-timer.g-gartic-low { background: var(--bad); color: #fff; }
+.g-gartic-body { display: grid; }
+.g-gartic-card { background: var(--surface); border-radius: var(--r-lg); box-shadow: 0 0 0 1px var(--line); padding: 18px; display: grid; gap: 14px; }
+.g-gartic-lead { margin: 0; }
+.g-gartic-inputrow { display: flex; gap: 8px; }
+.g-gartic-actions { display: flex; justify-content: flex-end; }
+.g-gartic-prompt { display: grid; gap: 4px; }
+.g-gartic-quote { margin: 0; font-size: 1.2rem; font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
+.g-gartic-wait { text-align: center; justify-items: center; padding: 36px 18px; }
+.g-gartic-wait p { margin: 0; }
+.g-gartic-spin { width: 34px; height: 34px; border-radius: 50%; border: 4px solid var(--surface2); border-top-color: var(--accent); animation: g-gartic-rot 1s linear infinite; }
+@keyframes g-gartic-rot { to { transform: rotate(360deg); } }
+.g-gartic-frame { background: #fff; border-radius: var(--r-md); aspect-ratio: 3 / 2; width: 100%; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
+.g-gartic-img { display: block; width: 100%; height: 100%; object-fit: contain; }
+/* quadro */
+.g-gartic-pad { display: grid; gap: 10px; }
+.g-gartic-stage { background: var(--surface2); border-radius: var(--r-md); padding: 6px; }
+.g-gartic-canvas { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; background: #fff; border-radius: 10px; touch-action: none; cursor: crosshair; user-select: none; -webkit-user-select: none; }
+.g-gartic-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.g-gartic-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.g-gartic-colors { gap: 6px; max-width: 300px; }
+.g-gartic-acts { margin-left: auto; }
+.g-gartic-tool { display: inline-flex; align-items: center; gap: 6px; border: 0; background: var(--surface2); color: var(--muted); padding: 8px 12px; min-height: 40px; border-radius: var(--r-sm); font-weight: 600; font-size: .9rem; }
+.g-gartic-tool .ico { width: 18px; height: 18px; }
+.g-gartic-tool[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.g-gartic-erasericon { width: 16px; height: 12px; border-radius: 3px; background: currentColor; transform: rotate(-30deg); opacity: .85; flex: none; }
+.g-gartic-wbtn { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--surface2); }
+.g-gartic-wbtn[aria-pressed="true"] { box-shadow: 0 0 0 2.5px var(--accent) inset; }
+.g-gartic-dot { display: block; border-radius: 50%; background: var(--text); }
+.g-gartic-sw { width: 28px; height: 28px; border-radius: 50%; border: 0; padding: 0; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--text) 25%, transparent) inset; transition: transform .12s var(--ease); }
+.g-gartic-sw[aria-pressed="true"] { transform: scale(1.12); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4.5px var(--accent); }
+/* álbum */
+.g-gartic-ctl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.g-gartic-ctlbtns { display: flex; gap: 8px; flex-wrap: wrap; }
+.g-gartic-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+.g-gartic-col { display: grid; gap: 10px; min-width: 0; }
+.g-gartic-colhead { font-size: 1.05rem; padding: 0 4px; }
+.g-gartic-slot { background: var(--surface); border-radius: var(--r-md); box-shadow: 0 0 0 1px var(--line); padding: 12px; display: grid; gap: 8px; min-width: 0; }
+.g-gartic-slot[data-kind="img"] { min-height: 0; }
+.g-gartic-slot.hid { background: var(--surface2); box-shadow: none; opacity: .7; min-height: 70px; align-content: center; }
+.g-gartic-slot.pop { animation: g-gartic-pop .35s var(--ease); }
+@keyframes g-gartic-pop { from { transform: scale(.94); opacity: 0; } }
+.g-gartic-slotlabel { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.g-gartic-hidden { color: var(--muted); font-size: .9rem; }
+@media (max-width: 640px) {
+  .g-gartic { padding: 8px 8px 20px; }
+  .g-gartic-card { padding: 12px; }
+  .g-gartic-acts { margin-left: 0; }
+  .g-gartic-cols { grid-template-columns: 1fr; }
+  .g-gartic-inputrow { flex-wrap: wrap; }
+  .g-gartic-actions .btn { width: 100%; }
+}
