@@ -1,9 +1,15 @@
 # Gera os instaladores do Echo para computador (Mac e Windows).
-# Quando roda: ao publicar uma Release com uma tag "v1.0.0" (os instaladores entram na própria Release)
-# ou manualmente em Actions → "Echo para computador" → Run workflow (os arquivos ficam em Artifacts).
+# Quando roda:
+#  - quando algo em desktop/ muda na main: monta e coloca os instaladores na Release "v<versão do desktop/package.json>"
+#    (cria a Release se ainda não existir);
+#  - ao publicar uma Release com uma tag "v1.0.1" (usa a versão da tag);
+#  - manualmente em Actions → "Echo para computador" → Run workflow.
 name: Echo para computador
 
 on:
+  push:
+    branches: [main]
+    paths: ['desktop/**', '.github/workflows/desktop.yml']
   release:
     types: [published]
   workflow_dispatch:
@@ -32,10 +38,40 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --allow-same-version
-      - name: Gerar instalador
-        run: npx electron-builder --publish never
+      - name: Gerar instalador (Windows)
+        if: runner.os == 'Windows'
+        run: npx electron-builder --win --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      # no Mac, um processador de cada vez: montar os dois .dmg juntos trava o hdiutil ("Resource busy")
+      - name: Gerar instalador (Mac, Apple Silicon)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          for i in 1 2 3; do
+            hdiutil detach /Volumes/Echo -force >/dev/null 2>&1 || true
+            npx electron-builder --mac --arm64 --publish never && exit 0
+            echo "tentativa $i falhou, tentando de novo"; sleep 10
+          done
+          exit 1
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Gerar instalador (Mac, Intel)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          for i in 1 2 3; do
+            hdiutil detach /Volumes/Echo -force >/dev/null 2>&1 || true
+            npx electron-builder --mac --x64 --publish never && exit 0
+            echo "tentativa $i falhou, tentando de novo"; sleep 10
+          done
+          exit 1
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Versão
+        id: v
+        shell: bash
+        run: echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: Echo-${{ runner.os }}
@@ -44,9 +80,11 @@ jobs:
             desktop/dist/*.exe
           if-no-files-found: error
       - name: Publicar em Releases
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.event_name != 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.v.outputs.tag }}
+          name: Echo ${{ steps.v.outputs.tag }}
           files: |
             desktop/dist/*.dmg
             desktop/dist/*.exe
