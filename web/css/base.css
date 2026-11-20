@@ -269,3 +269,7 @@ html.wco::before { content: ""; position: fixed; z-index: 2147483000; top: env(t
 /* app para Mac: os três botões da janela (vermelho, amarelo, verde) ficam numa faixa própria, acima do app */
 html.mac-app .app, html.mac-app .auth, html.mac-app #auth { top: 40px !important; }
 html.mac-app::before { left: 0; width: 100%; height: 40px; }
+/* app para computador: as camadas de tela cheia (Configurações, fim da ligação, chamada chegando) começam abaixo
+   da faixa de arrastar a janela; antes o X das Configurações ficava embaixo dela, cortado e sem clique */
+html.mac-app .settings, html.mac-app .set-ghost, html.mac-app .ce, html.mac-app .inc { top: 40px !important; }
+html.wco .settings, html.wco .set-ghost, html.wco .ce, html.wco .inc { top: env(titlebar-area-height, 32px) !important; }
