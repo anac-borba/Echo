@@ -162,6 +162,8 @@ async function boot() {
   if (!(safari || (standalone && /iPhone|iPad/.test(ua) && !/CriOS|GSA\//.test(ua)))) document.documentElement.classList.add('lite');
   // barra de título: no app instalado e no app para computador, o Echo ocupa o lugar dela (sobra só uma faixa para arrastar)
   const wco = navigator.windowControlsOverlay;
+  const macApp = / Electron\//.test(ua) && /Macintosh/.test(ua);
+  if (macApp) document.documentElement.classList.add('mac-app');
   const syncWco = () => document.documentElement.classList.toggle('wco', !!(wco && wco.visible) || / Electron\//.test(ua));
   syncWco(); if (wco) wco.addEventListener('geometrychange', syncWco);
   initPwa();

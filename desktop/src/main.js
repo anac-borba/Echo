@@ -23,7 +23,7 @@ function createWindow() {
     // sem barra de título do sistema: o Echo desenha uma faixa escura para arrastar; os botões da janela continuam
     autoHideMenuBar: true,
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
-    titleBarOverlay: isMac ? true : { color: '#0E0E10', symbolColor: '#FFFFFF', height: 32 },
+    ...(isMac ? { trafficLightPosition: { x: 16, y: 14 } } : { titleBarOverlay: { color: '#0E0E10', symbolColor: '#FFFFFF', height: 32 } }),
     webPreferences: { contextIsolation: true, sandbox: true, spellcheck: true, backgroundThrottling: false },
   });
   win.once('ready-to-show', () => win.show());
@@ -65,7 +65,7 @@ function setupScreenShare() {
       const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] });
       const src = sources.find((s) => s.id === choice.id);
       if (!src) { callback({}); return; }
-      // som do computador: "loopback" (Windows; no Mac só nas versões novas do sistema)
+      // som do computador: "loopback" (Windows; Mac 14.2+ com Electron 39+, que pede a permissão "Gravação de Áudio do Sistema")
       callback(choice.audio && request.audioRequested !== false ? { video: src, audio: 'loopback' } : { video: src });
     } catch (e) {
       console.error('compartilhar', e);
@@ -104,7 +104,9 @@ ipcMain.on('picker:choose', (e, v) => {
   pickerDone(ok ? { id: v.id, audio: !!v.audio } : null);
 });
 ipcMain.on('picker:cancel', (e) => { if (picking && e.sender === picking.win.webContents && pickerDone) pickerDone(null); });
-ipcMain.handle('picker:platform', () => ({ os: process.platform, audio: process.platform === 'win32' || (isMac && Number(require('os').release().split('.')[0]) >= 23) }));
+// som do computador: Windows sempre; Mac a partir do macOS 14.2 (Darwin 23.2), pela "torneira" de áudio do sistema
+const macAudio = () => { const [maj, min] = require('os').release().split('.').map(Number); return maj > 23 || (maj === 23 && min >= 2); };
+ipcMain.handle('picker:platform', () => ({ os: process.platform, audio: process.platform === 'win32' || (isMac && macAudio()) }));
 
 /* ── menu mínimo (no Mac o menu do app precisa existir para copiar/colar funcionar) ── */
 function setupMenu() {

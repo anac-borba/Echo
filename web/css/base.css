@@ -265,3 +265,7 @@ html.wco { background: var(--bg); }
 html.wco .app, html.wco .auth, html.wco #auth { top: env(titlebar-area-height, 32px) !important; height: auto !important; bottom: 0 !important; }
 html.wco::before { content: ""; position: fixed; z-index: 2147483000; top: env(titlebar-area-y, 0); left: env(titlebar-area-x, 0); width: env(titlebar-area-width, 100%); height: env(titlebar-area-height, 32px);
   -webkit-app-region: drag; app-region: drag; background: var(--bg); }
+
+/* app para Mac: os três botões da janela (vermelho, amarelo, verde) ficam numa faixa própria, acima do app */
+html.mac-app .app, html.mac-app .auth, html.mac-app #auth { top: 40px !important; }
+html.mac-app::before { left: 0; width: 100%; height: 40px; }
