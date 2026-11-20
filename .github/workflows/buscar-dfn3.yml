@@ -20,7 +20,12 @@ jobs:
           tar -xzf deepfilternet3-noise-filter-1.3.0.tgz
           rm -rf "$GITHUB_WORKSPACE/vendor-dfn3" && mkdir -p "$GITHUB_WORKSPACE/vendor-dfn3"
           cp -r package/. "$GITHUB_WORKSPACE/vendor-dfn3/"
-          cd "$GITHUB_WORKSPACE/vendor-dfn3" && find . -type f | sort > ARQUIVOS.txt && du -ah . | sort -h | tail -20 > TAMANHOS.txt
+          mkdir -p "$GITHUB_WORKSPACE/vendor-dfn3/assets"
+          B=https://cdn.mezon.ai/AI/models/datas/noise_suppression/deepfilternet3/v3
+          curl -fsSL "$B/pkg/df_bg.wasm" -o "$GITHUB_WORKSPACE/vendor-dfn3/assets/df_bg.wasm"
+          curl -fsSL "$B/models/DeepFilterNet3_onnx.tar.gz" -o "$GITHUB_WORKSPACE/vendor-dfn3/assets/DeepFilterNet3_onnx.tar.gz"
+          curl -fsSL "$B/pkg/df.js" -o "$GITHUB_WORKSPACE/vendor-dfn3/assets/df.js" || true
+          cd "$GITHUB_WORKSPACE/vendor-dfn3" && sha256sum assets/* > assets/SHA256.txt && find . -type f | sort > ARQUIVOS.txt && du -ah . | sort -h | tail -20 > TAMANHOS.txt
       - name: Guardar
         run: |
           git config user.name "github-actions"
