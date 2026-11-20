@@ -13,7 +13,7 @@ import { bioMethod, platformId, loadPasskey, lastUser, saveLast } from './auth.j
 import { isStandalone, canPrompt, promptInstall, manualHelp, onInstallChange } from './pwa.js';
 import { notifySupported, notifyState, enableNotify, disableNotify, isIOS } from './notify.js';
 import { app as desk } from './desktop.js';
-import { NOVIDADES } from './novidades.js';
+import { NOVIDADES, SITE_VERSION } from './novidades.js';
 
 const root = () => $('#settings');
 let current = null;
@@ -481,7 +481,7 @@ addDict('pt', {
   'set.update': 'Atualizações', 'upd.site': 'Echo', 'upd.site.d': 'Confere se tem versão nova do Echo e instala na hora.',
   'upd.force': 'Procurar atualização', 'upd.forcing': 'Atualizando…', 'upd.app': 'Echo para computador', 'upd.ver': 'Versão {v}',
   'upd.check': 'Procurar atualização', 'upd.checking': 'Procurando…', 'upd.none': 'Você está na versão mais nova.', 'upd.dl': 'Baixando a versão {v}… {p}%',
-  'upd.news': 'Novidades', 'upd.done': 'Echo atualizado.', 'upd.ready': 'A versão {v} está pronta.', 'upd.restart': 'Reiniciar e atualizar', 'upd.err': 'Não deu para atualizar: {e}',
+  'upd.sitever': '(versão aberta: {v})', 'upd.news': 'Novidades', 'upd.done': 'Echo atualizado.', 'upd.ready': 'A versão {v} está pronta.', 'upd.restart': 'Reiniciar e atualizar', 'upd.err': 'Não deu para atualizar: {e}',
   'desk.title': 'No computador', 'desk.ctl': 'Deixar pedirem controle', 'desk.ctl.d': 'Quem assiste a sua tela pode pedir para usar o mouse e o teclado. Cada pedido abre uma janela para você permitir.',
   'desk.login': 'Abrir ao ligar o computador', 'desk.key': 'Atalho para parar o controle', 'desk.get': 'Baixar o Echo para computador', 'desk.get.d': 'Som de cada app na transmissão e controle remoto.',
 });
@@ -489,7 +489,7 @@ addDict('en', {
   'set.update': 'Updates', 'upd.site': 'Echo', 'upd.site.d': 'Checks for a newer Echo and installs it right away.',
   'upd.force': 'Check for updates', 'upd.forcing': 'Updating…', 'upd.app': 'Echo for desktop', 'upd.ver': 'Version {v}',
   'upd.check': 'Check for updates', 'upd.checking': 'Checking…', 'upd.none': 'You have the newest version.', 'upd.dl': 'Downloading version {v}… {p}%',
-  'upd.news': "What's new", 'upd.done': 'Echo updated.', 'upd.ready': 'Version {v} is ready.', 'upd.restart': 'Restart and update', 'upd.err': "Couldn't update: {e}",
+  'upd.sitever': '(open version: {v})', 'upd.news': "What's new", 'upd.done': 'Echo updated.', 'upd.ready': 'Version {v} is ready.', 'upd.restart': 'Restart and update', 'upd.err': "Couldn't update: {e}",
   'desk.title': 'On this computer', 'desk.ctl': 'Allow control requests', 'desk.ctl.d': 'People watching your screen can ask to use your mouse and keyboard. Each request opens a window for you to allow.',
   'desk.login': 'Open at login', 'desk.key': 'Shortcut to stop control', 'desk.get': 'Get Echo for desktop', 'desk.get.d': 'Per-app sound when sharing and remote control.',
 });
@@ -559,7 +559,7 @@ function pageUpdate() {
     if (r === 'updating') { siteBtn.textContent = t('upd.forcing'); return; }
     siteBtn.disabled = false; siteBtn.textContent = t('upd.force'); toast(t('upd.none'));
   } }, t('upd.force'));
-  out.push(group(t('set.update'), null, row(t('upd.site'), t('upd.site.d'), siteBtn)));
+  out.push(group(t('set.update'), null, row(t('upd.site'), t('upd.site.d') + ' ' + t('upd.sitever', { v: SITE_VERSION }), siteBtn)));
   out.push(newsBox());
   if (desk) {
     const status = el('small', { text: '' });

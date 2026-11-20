@@ -273,3 +273,7 @@ html.mac-app::before { left: 0; width: 100%; height: 40px; }
    da faixa de arrastar a janela; antes o X das Configurações ficava embaixo dela, cortado e sem clique */
 html.mac-app .settings, html.mac-app .set-ghost, html.mac-app .ce, html.mac-app .inc { top: 40px !important; }
 html.wco .settings, html.wco .set-ghost, html.wco .ce, html.wco .inc { top: env(titlebar-area-height, 32px) !important; }
+@media (min-width: 821px) {
+  html.mac-app .set-bar { top: 58px !important; }
+  html.wco .set-bar { top: calc(env(titlebar-area-height, 32px) + 18px) !important; }
+}
