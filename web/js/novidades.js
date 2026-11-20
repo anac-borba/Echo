@@ -2,7 +2,7 @@
 // Novidades do Echo: o que mudou em cada versão, com um clipe curto das telas novas (em img/novidades/).
 // Para uma versão nova: acrescente um item no começo da lista. Clipes: mp4 curtos (gravados com dev/novidades.cjs).
 // mude junto com VERSION no sw.js: aparece em Configurações › Atualizações para saber qual versão está aberta
-export const SITE_VERSION = '2026-11-20-13';
+export const SITE_VERSION = '2026-11-20-14';
 export const NOVIDADES = [
   {
     date: '2026-11-20',

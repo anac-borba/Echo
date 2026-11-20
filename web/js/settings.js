@@ -610,7 +610,7 @@ export function refreshSettings() { if (!root().hidden) openSettings(current, tr
 const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 function play(node, name, done) {
   node.dataset.anim = name; void node.offsetWidth;
-  const list = node.getAnimations ? node.getAnimations() : [];
+  const list = node.getAnimations ? node.getAnimations({ subtree: true }).filter((a) => a.effect && a.effect.getTiming().iterations !== Infinity) : [];
   const end = () => { if (node.dataset.anim === name) delete node.dataset.anim; done && done(); };
   if (!list.length) { end(); return; }
   Promise.all(list.map((a) => a.finished)).then(end, end);

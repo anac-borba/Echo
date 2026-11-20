@@ -152,3 +152,11 @@ dialog[open]::backdrop { animation: m-fade var(--m-base) ease-out both; }
 @keyframes m-back-solid { from { transform: translate3d(-24%, 0, 0); } }
 @keyframes m-dim-in { from { opacity: 0; } to { opacity: .4; } }
 @keyframes m-dim-out { from { opacity: .4; } to { opacity: 0; } }
+/* computador: a tela das Configurações entra já opaca (antes esmaecia do transparente e a tela inicial aparecia
+   por trás, piscando); só o conteúdo chega com um movimento curto */
+@media (min-width: 821px) {
+  .settings, .settings[data-anim="in"] { animation: none !important; }
+  .settings[data-anim="in"] > .set-nav, .settings[data-anim="in"] > .set-main { animation: m-set-in var(--m-base) var(--ease-out) backwards; }
+  .settings[data-anim="in"] > .set-main { animation-delay: 30ms; }
+}
+@keyframes m-set-in { from { opacity: 0; transform: translate3d(0, 8px, 0); } }
