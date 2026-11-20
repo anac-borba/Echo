@@ -16,14 +16,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
-      - name: Compilar com registro
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Montar com registro
         shell: bash
+        working-directory: desktop
         run: |
           set +e
           L="$GITHUB_WORKSPACE/log-${{ runner.os }}.txt"
-          { bash desktop/helper/build.sh 2>&1; echo "== exit helper $?"; } > "$L"; cat "$L"
-          if [ "$RUNNER_OS" = macOS ]; then { (printf 'ping\nlist\n'; sleep 3; printf 'quit\n') | desktop/helper/bin/echo-helper | strings; } >> "$L" 2>&1; fi
-          if [ "$RUNNER_OS" = Windows ]; then { (printf 'ping\nlist\n'; sleep 3; printf 'quit\n') | desktop/helper/bin/echo-helper.exe | strings; } >> "$L" 2>&1; fi
+          { bash helper/build.sh 2>&1; echo "== exit helper $?"; npm install --no-audit --no-fund 2>&1 | tail -5; echo "== exit install $?";
+            if [ "$RUNNER_OS" = macOS ]; then CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --mac --arm64 --publish never 2>&1; echo "== exit build $?";
+            else CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --win --publish never 2>&1; echo "== exit build $?"; fi
+            ls -la dist dist/*/ 2>&1 | head -40; find dist -name 'echo-helper*' 2>&1; find dist -name 'app-update.yml' -exec cat {} \; 2>&1; } > "$L"
           exit 0
       - name: Guardar registro
         shell: bash

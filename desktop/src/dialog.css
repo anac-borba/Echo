@@ -1,0 +1,32 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #16161A; color: #fff; font: 15px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; user-select: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid #9D90FF; outline-offset: 2px; }
+.d { height: 100%; display: flex; flex-direction: column; padding: 32px 24px 24px; }
+.c { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+.av { width: 84px; height: 84px; border-radius: 42px; background: #3A3550; display: grid; place-items: center; font-size: 34px; font-weight: 600; margin-bottom: 8px; }
+.ic { width: 64px; height: 64px; border-radius: 18px; background: #24202E; color: #9D90FF; display: grid; place-items: center; }
+h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; }
+.left h1 { margin-top: 24px; font-size: 24px; }
+p { margin: 0; color: #A1A1A6; }
+ul.sw { list-style: none; margin: 26px 0 0; padding: 0; border-radius: 12px; background: #1E1E22; overflow: hidden; }
+ul.sw li { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #2A2A2E; }
+ul.sw li:last-child { border-bottom: 0; }
+ul.sw li span { flex: 1; font-size: 16px; }
+.t { width: 44px; height: 26px; flex: none; padding: 2px; border: 0; border-radius: 13px; background: #3A3A3F; display: flex; justify-content: flex-start; }
+.t[aria-checked="true"] { background: #34C759; justify-content: flex-end; }
+.t i { width: 22px; height: 22px; border-radius: 11px; background: #fff; }
+.note { margin: 14px 4px 0; font-size: 13px; line-height: 1.45; color: #8E8E93; }
+ul.ok { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+ul.ok li { display: flex; gap: 14px; font-size: 15px; }
+ul.ok svg { flex: none; margin-top: 1px; }
+.b2 { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.b { height: 50px; border: 0; border-radius: 25px; font-size: 16px; font-weight: 500; background: #2A2A2E; }
+.b.main { background: #fff; color: #111; font-weight: 600; }
+/* pílula "alguém está usando" */
+body.pill { background: #000; }
+.pl { height: 100%; display: flex; align-items: center; gap: 12px; padding: 0 8px 0 16px; -webkit-app-region: drag; }
+.pl .a { width: 26px; height: 26px; border-radius: 13px; background: #3A3550; display: grid; place-items: center; font-size: 12px; font-weight: 600; flex: none; }
+.pl .tx { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl .k { color: #8E8E93; font-size: 13px; white-space: nowrap; }
+.pl button { -webkit-app-region: no-drag; height: 34px; padding: 0 16px; border: 0; border-radius: 17px; background: #FF3B30; color: #fff; font-size: 14px; font-weight: 600; }

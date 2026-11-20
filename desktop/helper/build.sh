@@ -2,7 +2,8 @@
 # Compila o programa auxiliar nativo (echo-helper) para o sistema atual. Roda no GitHub (Actions) antes de montar o app.
 # Saída: desktop/helper/bin/echo-helper (Mac, universal) ou desktop/helper/bin/echo-helper.exe (Windows).
 set -e
-cd "$(dirname "$0")"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+cd "$HERE"
 mkdir -p bin
 case "$(uname -s)" in
   Darwin)
@@ -17,4 +18,4 @@ case "$(uname -s)" in
     ;;
   *) echo "sistema sem programa auxiliar"; exit 0 ;;
 esac
-ls -la "$(dirname "$0")/bin" 2>/dev/null || ls -la bin
+ls -la "$HERE/bin"

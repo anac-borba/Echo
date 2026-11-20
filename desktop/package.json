@@ -1,7 +1,7 @@
 {
   "name": "echo-desktop",
   "productName": "Echo",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Echo para computador: ligações, transmissão de tela e o som do computador junto.",
   "main": "src/main.js",
   "author": "Ana Clara Alcantara",
@@ -18,11 +18,20 @@
   "build": {
     "appId": "dev.workers.echo-ac-2k4.echo",
     "productName": "Echo",
-    "directories": { "output": "dist", "buildResources": "build" },
-    "files": ["src/**/*", "package.json"],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
     "artifactName": "Echo-${version}-${os}-${arch}.${ext}",
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "category": "public.app-category.social-networking",
       "identity": "-",
       "hardenedRuntime": false,
@@ -33,8 +42,45 @@
         "NSAudioCaptureUsageDescription": "O Echo leva o som do computador junto quando você transmite a tela."
       }
     },
-    "dmg": { "title": "Echo" },
-    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }] },
-    "nsis": { "oneClick": true, "perMachine": false, "shortcutName": "Echo", "createDesktopShortcut": true }
+    "dmg": {
+      "title": "Echo"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "shortcutName": "Echo",
+      "createDesktopShortcut": true
+    },
+    "extraResources": [
+      {
+        "from": "helper/bin",
+        "to": "helper",
+        "filter": [
+          "echo-helper",
+          "echo-helper.exe"
+        ]
+      }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "anac-borba",
+        "repo": "echo",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
   }
 }
