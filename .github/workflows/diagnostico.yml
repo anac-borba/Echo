@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,9 @@ jobs:
           set +e
           L="$GITHUB_WORKSPACE/log-${{ runner.os }}.txt"
           { echo "== node $(node -v) npm $(npm -v)"; npm install --no-audit --no-fund 2>&1; echo "== exit install $?";
-            CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --publish never 2>&1; echo "== exit build $?";
+            if [ "$RUNNER_OS" = macOS ]; then
+              for a in arm64 x64; do for i in 1 2 3; do hdiutil detach /Volumes/Echo -force >/dev/null 2>&1; CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --mac --$a --publish never 2>&1 && { echo "== ok $a"; break; }; echo "== falhou $a $i"; sleep 10; done; done
+            else CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --win --publish never 2>&1; echo "== exit build $?"; fi
             ls -la dist 2>&1; } > "$L"
           exit 0
       - name: Guardar registro
