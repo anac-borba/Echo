@@ -139,3 +139,16 @@ dialog[open]::backdrop { animation: m-fade var(--m-base) ease-out both; }
 @keyframes m-sheet-up { from { transform: translate3d(0, 100%, 0); } }
 @keyframes m-sheet-down { to { transform: translate3d(0, 100%, 0); } }
 @media (prefers-reduced-motion: reduce) { .settings[data-anim], .set-ghost[data-anim] { animation: m-fade var(--m-fast) ease-out both !important; } }
+/* a página de trás não fica transparente (senão a tela de baixo das Configurações aparece por trás e "pisca"):
+   ela só anda e escurece com uma película por cima */
+@media (max-width: 820px), (orientation: landscape) and (max-height: 520px) {
+  .set-ghost[data-anim="under"] { animation: m-under-solid var(--m-slow) var(--ease-out) forwards; }
+  .settings[data-anim="pop"] { animation: m-back-solid var(--m-base) var(--ease-out) backwards; }
+  .set-ghost[data-anim="under"]::after, .settings[data-anim="pop"]::after { content: ""; position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 9; }
+  .set-ghost[data-anim="under"]::after { animation: m-dim-in var(--m-slow) var(--ease-out) forwards; }
+  .settings[data-anim="pop"]::after { animation: m-dim-out var(--m-base) var(--ease-out) forwards; }
+}
+@keyframes m-under-solid { to { transform: translate3d(-24%, 0, 0); } }
+@keyframes m-back-solid { from { transform: translate3d(-24%, 0, 0); } }
+@keyframes m-dim-in { from { opacity: 0; } to { opacity: .4; } }
+@keyframes m-dim-out { from { opacity: .4; } to { opacity: 0; } }

@@ -4,7 +4,7 @@
    - /api, /ws e /events (e qualquer outro endereço) vão sempre direto para a rede, sem cache.
    - Nunca guarda resposta que dependa de cookie (Set-Cookie, Vary: Cookie) nem pedidos com Range.
    IMPORTANTE: a cada publicação, troque VERSION abaixo. É isso que faz o aplicativo instalado pegar a versão nova. */
-const VERSION = 'echo-2026-11-20-8';
+const VERSION = 'echo-2026-11-20-9';
 const CACHE = VERSION;
 
 const PRECACHE = [
