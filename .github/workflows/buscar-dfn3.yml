@@ -14,18 +14,19 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Baixar
+        shell: bash
         run: |
-          mkdir -p /tmp/p && cd /tmp/p
-          npm pack deepfilternet3-noise-filter@1.3.0
-          tar -xzf deepfilternet3-noise-filter-1.3.0.tgz
-          rm -rf "$GITHUB_WORKSPACE/vendor-dfn3" && mkdir -p "$GITHUB_WORKSPACE/vendor-dfn3"
-          cp -r package/. "$GITHUB_WORKSPACE/vendor-dfn3/"
-          mkdir -p "$GITHUB_WORKSPACE/vendor-dfn3/assets"
+          set +e
+          W="$GITHUB_WORKSPACE/vendor-dfn3"; rm -rf "$W"; mkdir -p "$W/assets"; L="$W/LOG.txt"
+          cd /tmp && npm pack deepfilternet3-noise-filter@1.3.0 >>"$L" 2>&1 && tar -xzf deepfilternet3-noise-filter-1.3.0.tgz && cp -r package/. "$W/"
           B=https://cdn.mezon.ai/AI/models/datas/noise_suppression/deepfilternet3/v3
-          curl -fsSL "$B/pkg/df_bg.wasm" -o "$GITHUB_WORKSPACE/vendor-dfn3/assets/df_bg.wasm"
-          curl -fsSL "$B/models/DeepFilterNet3_onnx.tar.gz" -o "$GITHUB_WORKSPACE/vendor-dfn3/assets/DeepFilterNet3_onnx.tar.gz"
-          curl -fsSL "$B/pkg/df.js" -o "$GITHUB_WORKSPACE/vendor-dfn3/assets/df.js" || true
-          cd "$GITHUB_WORKSPACE/vendor-dfn3" && sha256sum assets/* > assets/SHA256.txt && find . -type f | sort > ARQUIVOS.txt && du -ah . | sort -h | tail -20 > TAMANHOS.txt
+          for f in pkg/df_bg.wasm pkg/df.js models/DeepFilterNet3_onnx.tar.gz; do
+            echo "== $B/$f" >>"$L"; curl -sSL -A "Mozilla/5.0" -o "$W/assets/$(basename $f)" -w "%{http_code} %{size_download}\n" "$B/$f" >>"$L" 2>&1
+          done
+          echo "== github model" >>"$L"
+          curl -sSL -o "$W/assets/DeepFilterNet3_onnx.github.tar.gz" -w "%{http_code} %{size_download}\n" https://github.com/Rikorose/DeepFilterNet/raw/main/models/DeepFilterNet3_onnx.tar.gz >>"$L" 2>&1
+          cd "$W" && sha256sum assets/* >> "$L"; ls -la assets >> "$L"
+          exit 0
       - name: Guardar
         run: |
           git config user.name "github-actions"
