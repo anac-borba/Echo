@@ -1,11 +1,11 @@
 # Gera os instaladores do Echo para computador (Mac e Windows).
-# Quando roda: ao criar uma tag "v1.0.0" (vira uma versão para baixar em Releases)
+# Quando roda: ao publicar uma Release com uma tag "v1.0.0" (os instaladores entram na própria Release)
 # ou manualmente em Actions → "Echo para computador" → Run workflow (os arquivos ficam em Artifacts).
 name: Echo para computador
 
 on:
-  push:
-    tags: ['v*']
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:

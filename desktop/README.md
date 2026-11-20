@@ -25,14 +25,9 @@ Se aparecer a tela azul "O Windows protegeu o computador", clique em **Mais info
 
 ## Gerar uma versão nova
 
-No GitHub: **Releases → Draft a new release → Choose a tag** → escreva `v1.0.1` (sempre maior que a anterior) → **Publish**.
-Ou pelo terminal, na pasta do projeto:
+No GitHub: **Releases → Draft a new release → Choose a tag** → escreva `v1.0.1` (sempre maior que a anterior) → **Create new tag** → **Publish release**.
 
-```
-git tag v1.0.1 && git push origin v1.0.1
-```
-
-O GitHub monta os instaladores em uns 10 minutos (aba **Actions**) e coloca os arquivos na Release.
+O GitHub monta os instaladores em uns 10 minutos (aba **Actions**) e coloca os arquivos na própria Release.
 
 ## Rodar no seu computador (para testar mudanças)
 
