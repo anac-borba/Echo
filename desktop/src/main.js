@@ -9,6 +9,7 @@ const path = require('path');
 const fs = require('fs');
 const helper = require('./helper');
 const updater = require('./updater');
+const passkey = require('./passkey');
 
 const ECHO = 'https://telinha.echo-ac-2k4.workers.dev';
 const ORIGIN = new URL(ECHO).origin;
@@ -18,6 +19,7 @@ nativeTheme.themeSource = 'dark';
 if (!app.requestSingleInstanceLock()) app.quit();
 
 let win = null;
+let quitting = false;   // no Mac, fechar a janela só esconde: o Echo segue ligado para avisar de mensagens e chamadas
 const fromEcho = (e) => { try { return new URL(e.senderFrame.url).origin === ORIGIN; } catch { return false; } };
 const safeUrl = (u) => { try { return ['https:', 'http:', 'mailto:'].includes(new URL(u).protocol); } catch { return false; } };
 const safeOrigin = (u) => { try { return new URL(u).origin; } catch { return ''; } };
@@ -50,6 +52,7 @@ function createWindow() {
   win.webContents.on('will-navigate', (e, url) => {
     if (new URL(url).origin !== ORIGIN) { e.preventDefault(); if (safeUrl(url)) shell.openExternal(url); }
   });
+  win.on('close', (e) => { if (isMac && !quitting) { e.preventDefault(); win.hide(); } });
   win.on('closed', () => { win = null; endControl(); stopShareAudio(); });
 }
 
@@ -264,7 +267,7 @@ ipcMain.on('ctl:in', (e, m) => {
 });
 
 /* ═════════════ preferências, versão e atualização ═════════════ */
-ipcMain.handle('app:info', (e) => (fromEcho(e) ? { version: app.getVersion(), os: process.platform, perApp: helper.available(), control: true } : null));
+ipcMain.handle('app:info', (e) => (fromEcho(e) ? { version: app.getVersion(), os: process.platform, perApp: helper.available(), control: true, touchId: passkey.available(), notify: true } : null));
 ipcMain.handle('set:get', (e) => (fromEcho(e) ? { controlAllowed: !!S.controlAllowed, openAtLogin: app.getLoginItemSettings().openAtLogin } : null));
 ipcMain.handle('set:set', (e, k, v) => {
   if (!fromEcho(e)) return false;
@@ -275,6 +278,26 @@ ipcMain.handle('set:set', (e, k, v) => {
 ipcMain.handle('upd:check', (e) => (fromEcho(e) ? updater.check(true) : null));
 ipcMain.handle('upd:install', (e) => (fromEcho(e) ? updater.install() : null));
 updater.onState((s) => toPage('upd:state', s));
+
+/* ── Touch ID (passkey guardada no Keychain deste Mac) ── */
+const pkWrap = (fn) => async (e, o) => {
+  if (!fromEcho(e)) return { ok: false, code: 'not_supported' };
+  try { return { ok: true, r: await fn(o, ORIGIN) }; } catch (err) { return { ok: false, code: (err && err.code) || 'error' }; }
+};
+ipcMain.handle('pk:avail', (e) => fromEcho(e) && passkey.available());
+ipcMain.handle('pk:create', pkWrap((o, origin) => passkey.create(o, origin)));
+ipcMain.handle('pk:get', pkWrap((o, origin) => passkey.get(o, origin)));
+ipcMain.on('pk:forget', (e, id) => { if (fromEcho(e) && typeof id === 'string') passkey.forget(id); });
+
+/* ── janela: a notificação traz o Echo para a frente; contador de não lidas no ícone ── */
+function showWin() { if (!win) { createWindow(); return; } if (win.isMinimized()) win.restore(); win.show(); win.focus(); }
+ipcMain.on('win:show', (e) => { if (fromEcho(e)) showWin(); });
+ipcMain.on('win:badge', (e, n) => {
+  if (!fromEcho(e)) return;
+  const k = Math.max(0, Math.min(999, Number(n) || 0));
+  try { if (isMac) app.dock.setBadge(k ? String(k) : ''); else app.setBadgeCount(k); } catch { /* ok */ }
+});
+ipcMain.on('win:attention', (e) => { if (fromEcho(e) && win && !win.isFocused()) { try { if (isMac) app.dock.bounce('critical'); else win.flashFrame(true); } catch { /* ok */ } } });
 
 /* ── menu mínimo (no Mac o menu do app precisa existir para copiar/colar funcionar) ── */
 function setupMenu() {
@@ -287,7 +310,8 @@ function setupMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(tpl));
 }
 
-app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
+app.on('second-instance', () => showWin());
+app.on('before-quit', () => { quitting = true; });
 app.whenReady().then(() => {
   loadSettings();
   setupPermissions();
@@ -295,7 +319,7 @@ app.whenReady().then(() => {
   setupMenu();
   createWindow();
   updater.start();
-  app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); });
+  app.on('activate', () => showWin());
 });
 app.on('window-all-closed', () => { if (!isMac) app.quit(); });
 app.on('will-quit', () => { try { globalShortcut.unregisterAll(); } catch { /* ok */ } helper.stop(); });

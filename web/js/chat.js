@@ -1,5 +1,6 @@
 // Chat do Echo: conversas diretas com texto, emojis, GIFs, fotos, vídeos, áudios, arquivos,
 // visualização única, responder, reagir, editar e apagar, "visto", "digitando…" e o registro das chamadas.
+import { localNotify, setBadge } from './notify.js';
 import { $, el, icon, toast, avatar, displayName, store, copyText } from './util.js';
 import { D, CFG, userById, emit, on } from './state.js';
 import { api } from './api.js';
@@ -60,6 +61,7 @@ export async function loadConvs() {
 }
 export const unreadOf = (uid) => (S.convs.get(uid) || {}).unread || 0;
 export const totalUnread = () => [...S.convs.values()].reduce((n, c) => n + (c.unread || 0), 0);
+on('chat-unread', () => setBadge(totalUnread()));
 export const lastOf = (uid) => (S.convs.get(uid) || {}).last || null;
 const bucket = (uid) => { let b = S.msgs.get(uid); if (!b) S.msgs.set(uid, (b = { list: [], more: true, loading: false, loaded: false })); return b; };
 const otherOfConv = (conv) => conv.split(':').slice(1).find((x) => x !== D.me.id);
@@ -124,6 +126,7 @@ export function onChatEvent(m) {
           if (CFG.msgSound !== false) uiSound('msg');
           const who = displayName(userById(uid));
           toast(`${who}: ${preview(m.m)}`, { ms: 5000, action: { label: t('chat.open'), run: () => S.go && S.go('dm', uid) } });
+          localNotify({ title: who, body: preview(m.m), tag: 'dm:' + uid, onClick: () => S.go && S.go('dm', uid) });
         }
       }
       S.typing.delete(uid);

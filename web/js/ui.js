@@ -80,6 +80,8 @@ export function withTransition(kind, update) {
   // só no Safari: no Chrome a View Transition fotografa a tela inteira a cada troca, bloqueia os toques
   // durante a animação e às vezes deixa a imagem velha deslocada na tela (o "bug" de tela fora do lugar)
   if (document.documentElement.classList.contains('lite')) return false;
+  // no celular as animações são as nossas (motion.css): iguais em todo iPhone, até nos sem View Transition (iOS 17)
+  if (isCompact()) return false;
   if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches || document.hidden) return false;
   const root = document.documentElement;
   if (curTr) { try { curTr.skipTransition(); } catch {} curTr = null; }   // toque novo não espera a animação anterior
@@ -158,6 +160,9 @@ function callOutcome(kind, uid, ms) {
       el('div', { class: 'ce-col' }, again, msg, el('button', { class: 'ce-b text', type: 'button', onClick: close }, t('close'))));
   }
   node.addEventListener('click', (e) => { if (e.target === node && kind === 'ended') close(); });
+  // continua com a cor do fundo da ligação (sem trocar de tela de repente)
+  const col = document.getElementById('view-room') && document.getElementById('view-room').style.getPropertyValue('--ft-c');
+  if (col) node.style.setProperty('--ft-c', col);
   node.classList.add('in', 'm-now');   // entra na hora: continua a tela escura da ligação, sem piscar a conversa
   document.body.append(node);
   requestAnimationFrame(() => requestAnimationFrame(() => node.classList.remove('m-now')));

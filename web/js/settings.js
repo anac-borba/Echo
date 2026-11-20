@@ -7,12 +7,13 @@ import { t, tErr, setLang, getLang, addDict } from './i18n.js';
 import { PRESETS, SURFACES, swapMic, applyInputMode, applyOutputPrefs, renderCall, inCall } from './call.js';
 import { openMic, startMeter, setMicVolume } from './audio.js';
 import { cropImage } from './crop.js';
-import { profileCard, friendLink, withTransition } from './ui.js';
+import { profileCard, friendLink } from './ui.js';
 import { confirmBox } from './modal.js';
 import { bioMethod, platformId, loadPasskey, lastUser, saveLast } from './auth.js';
 import { isStandalone, canPrompt, promptInstall, manualHelp, onInstallChange } from './pwa.js';
 import { notifySupported, notifyState, enableNotify, disableNotify, isIOS } from './notify.js';
 import { app as desk } from './desktop.js';
+import { NOVIDADES } from './novidades.js';
 
 const root = () => $('#settings');
 let current = null;
@@ -442,6 +443,7 @@ addDict('pt', {
   'ntf.ios': 'No iPhone, as notificações só funcionam com o Echo instalado na Tela de Início: no Safari, toque em Compartilhar › Adicionar à Tela de Início, abra o Echo por lá e ligue aqui.',
   'ntf.unsupported': 'Este navegador não suporta notificações.', 'ntf.ring': 'Chamadas: o celular mostra a notificação com vibração. O toque de chamada com som só toca com o Echo aberto.',
   'ntf.err': 'Não deu para ligar as notificações agora.',
+  'ntf.desk': 'Mensagens e ligações aparecem como aviso do sistema quando o Echo não está na frente. No Mac, fechar a janela só esconde o Echo (os avisos continuam); para sair de vez, use Cmd+Q.',
 });
 addDict('en', {
   'set.notify': 'Notifications', 'set.d.notify': 'Message and call alerts when Echo is not open.',
@@ -451,6 +453,7 @@ addDict('en', {
   'ntf.ios': 'On iPhone, notifications only work with Echo installed on the Home Screen: in Safari tap Share › Add to Home Screen, open Echo from there and turn this on.',
   'ntf.unsupported': 'This browser does not support notifications.', 'ntf.ring': 'Calls: your phone shows the notification with vibration. The ringtone with sound only plays while Echo is open.',
   'ntf.err': "Couldn't turn on notifications right now.",
+  'ntf.desk': 'Messages and calls show up as system alerts when Echo is in the background. On Mac, closing the window only hides Echo (alerts keep coming); press Cmd+Q to quit.',
 });
 function pageNotify() {
   const box = el('div', { class: 'sg-stack' });
@@ -464,7 +467,7 @@ function pageNotify() {
       draw();
     }, t('ntf.on'));
     tg.disabled = st === 'unsupported' || st === 'denied' || iosNeedsApp;
-    const foot = iosNeedsApp ? t('ntf.ios') : st === 'unsupported' ? t('ntf.unsupported') : st === 'denied' ? t('ntf.denied') : t('ntf.ring');
+    const foot = desk ? t('ntf.desk') : iosNeedsApp ? t('ntf.ios') : st === 'unsupported' ? t('ntf.unsupported') : st === 'denied' ? t('ntf.denied') : t('ntf.ring');
     box.replaceChildren(
       group(null, foot, row(t('ntf.on'), t('ntf.on.d'), tg, { tag: 'label' })),
       group(t('ntf.sounds'), null, switchRow(t('ntf.msgsound'), t('ntf.msgsound.d'), CFG.msgSound !== false, (v) => { CFG.msgSound = v; saveCfg(); })));
@@ -475,35 +478,84 @@ function pageNotify() {
 
 /* ───────────── atualizações e Echo para computador ───────────── */
 addDict('pt', {
-  'set.update': 'Atualizações', 'upd.site': 'Echo', 'upd.site.d': 'Busca a versão mais nova do Echo agora e recarrega.',
+  'set.update': 'Atualizações', 'upd.site': 'Echo', 'upd.site.d': 'Confere se tem versão nova do Echo e instala na hora.',
   'upd.force': 'Procurar atualização', 'upd.forcing': 'Atualizando…', 'upd.app': 'Echo para computador', 'upd.ver': 'Versão {v}',
   'upd.check': 'Procurar atualização', 'upd.checking': 'Procurando…', 'upd.none': 'Você está na versão mais nova.', 'upd.dl': 'Baixando a versão {v}… {p}%',
-  'upd.ready': 'A versão {v} está pronta.', 'upd.restart': 'Reiniciar e atualizar', 'upd.err': 'Não deu para atualizar: {e}',
+  'upd.news': 'Novidades', 'upd.done': 'Echo atualizado.', 'upd.ready': 'A versão {v} está pronta.', 'upd.restart': 'Reiniciar e atualizar', 'upd.err': 'Não deu para atualizar: {e}',
   'desk.title': 'No computador', 'desk.ctl': 'Deixar pedirem controle', 'desk.ctl.d': 'Quem assiste a sua tela pode pedir para usar o mouse e o teclado. Cada pedido abre uma janela para você permitir.',
   'desk.login': 'Abrir ao ligar o computador', 'desk.key': 'Atalho para parar o controle', 'desk.get': 'Baixar o Echo para computador', 'desk.get.d': 'Som de cada app na transmissão e controle remoto.',
 });
 addDict('en', {
-  'set.update': 'Updates', 'upd.site': 'Echo', 'upd.site.d': 'Fetches the newest Echo now and reloads.',
+  'set.update': 'Updates', 'upd.site': 'Echo', 'upd.site.d': 'Checks for a newer Echo and installs it right away.',
   'upd.force': 'Check for updates', 'upd.forcing': 'Updating…', 'upd.app': 'Echo for desktop', 'upd.ver': 'Version {v}',
   'upd.check': 'Check for updates', 'upd.checking': 'Checking…', 'upd.none': 'You have the newest version.', 'upd.dl': 'Downloading version {v}… {p}%',
-  'upd.ready': 'Version {v} is ready.', 'upd.restart': 'Restart and update', 'upd.err': "Couldn't update: {e}",
+  'upd.news': "What's new", 'upd.done': 'Echo updated.', 'upd.ready': 'Version {v} is ready.', 'upd.restart': 'Restart and update', 'upd.err': "Couldn't update: {e}",
   'desk.title': 'On this computer', 'desk.ctl': 'Allow control requests', 'desk.ctl.d': 'People watching your screen can ask to use your mouse and keyboard. Each request opens a window for you to allow.',
   'desk.login': 'Open at login', 'desk.key': 'Shortcut to stop control', 'desk.get': 'Get Echo for desktop', 'desk.get.d': 'Per-app sound when sharing and remote control.',
 });
-/** Força a versão nova do site: pergunta ao service worker, apaga o que está guardado e recarrega. */
+/** Procura a versão nova do site. Sem novidade: só avisa (sem recarregar). Com novidade: instala, recarrega e
+ *  volta para esta mesma tela com o aviso "Echo atualizado". Devolve 'none' | 'updating'. */
 export async function forceSiteUpdate() {
-  try {
-    const reg = navigator.serviceWorker && (await navigator.serviceWorker.getRegistration());
-    if (reg) { await reg.update().catch(() => {}); if (reg.waiting) reg.waiting.postMessage({ type: 'skip-waiting' }); }
-    if (window.caches) for (const k of await caches.keys()) await caches.delete(k);
-  } catch { /* segue para recarregar */ }
+  let reg = null;
+  try { reg = navigator.serviceWorker && (await navigator.serviceWorker.getRegistration()); } catch { /* sem service worker */ }
+  if (reg) {
+    try { await reg.update(); } catch { /* sem internet: trata como "nada novo" */ }
+    const nw = reg.installing || reg.waiting;
+    // sem controlador = primeira visita (o service worker está só se instalando): não é versão nova
+    if (!nw || !navigator.serviceWorker.controller) return 'none';
+    await new Promise((ok) => {
+      if (nw.state === 'activated') { ok(); return; }
+      const to = setTimeout(ok, 15000);
+      nw.addEventListener('statechange', () => { if (nw.state === 'activated' || nw.state === 'redundant') { clearTimeout(to); ok(); } });
+      try { nw.postMessage({ type: 'skip-waiting' }); } catch { /* ok */ }
+    });
+  }
+  try { sessionStorage.setItem('echo.updated', 'update'); } catch { /* ok */ }
   location.reload();
+  return 'updating';
+}
+/** Depois de recarregar por causa de uma atualização: avisa e reabre Atualizações. */
+export function afterSiteUpdate() {
+  let page = null;
+  try { page = sessionStorage.getItem('echo.updated'); sessionStorage.removeItem('echo.updated'); } catch { /* ok */ }
+  if (!page) return;
+  toast(t('upd.done'));
+  openSettings(page, true);
+}
+/* Novidades: cada item com um clipe numa moldura de celular. O vídeo só toca quando aparece na tela. */
+function newsBox() {
+  const fmt = (d) => new Date(d + 'T12:00:00').toLocaleDateString(getLang() === 'en' ? 'en' : 'pt-BR', { day: 'numeric', month: 'long' });
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach((e) => {
+    const v = e.target; if (e.isIntersecting) { v.play().catch(() => {}); } else v.pause();
+  }), { threshold: 0.4 }) : null;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const box = el('div', { class: 'news' });
+  for (const rel of NOVIDADES) {
+    box.append(el('h3', { class: 'news-d', text: fmt(rel.date) }));
+    for (const it of rel.items) {
+      let media = null;
+      if (it.clip) {
+        const v = el('video', { class: 'news-v', src: it.clip, muted: true, loop: true, playsinline: true, preload: 'metadata', 'aria-hidden': 'true', disablepictureinpicture: true });
+        v.muted = true; v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+        if (!still && io) io.observe(v);
+        media = el('div', { class: 'news-phone' }, v);
+      }
+      box.append(el('article', { class: 'news-it' + (media ? ' has-clip' : '') }, media, el('div', { class: 'news-tx' }, el('b', { text: it.t }), el('p', { text: it.d }))));
+    }
+  }
+  return group(t('upd.news'), null, box);
 }
 let updUnsub = false;
 function pageUpdate() {
   const out = [];
-  const siteBtn = el('button', { class: 'btn sm', type: 'button', onClick: () => { siteBtn.disabled = true; siteBtn.textContent = t('upd.forcing'); forceSiteUpdate(); } }, t('upd.force'));
+  const siteBtn = el('button', { class: 'btn sm', type: 'button', onClick: async () => {
+    siteBtn.disabled = true; siteBtn.textContent = t('upd.checking');
+    const r = await forceSiteUpdate();
+    if (r === 'updating') { siteBtn.textContent = t('upd.forcing'); return; }
+    siteBtn.disabled = false; siteBtn.textContent = t('upd.force'); toast(t('upd.none'));
+  } }, t('upd.force'));
   out.push(group(t('set.update'), null, row(t('upd.site'), t('upd.site.d'), siteBtn)));
+  out.push(newsBox());
   if (desk) {
     const status = el('small', { text: '' });
     const act = el('button', { class: 'btn sm', type: 'button' }, t('upd.check'));
@@ -547,22 +599,47 @@ const PAGES = [
 /** Redesenha a página atual (ex.: depois de trocar o idioma), sem animação. */
 export function refreshSettings() { if (!root().hidden) openSettings(current, true); }
 
+/* Movimento próprio (sem View Transition, que o iPhone até o iOS 17 e o Chrome não fazem direito):
+   abrir = a folha sobe; fechar = desce; trocar de página no celular = a nova empurra da direita e a de antes
+   fica por baixo andando para a esquerda (voltar: o contrário). Só transform e opacity. */
+const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+function play(node, name, done) {
+  node.dataset.anim = name; void node.offsetWidth;
+  const list = node.getAnimations ? node.getAnimations() : [];
+  const end = () => { if (node.dataset.anim === name) delete node.dataset.anim; done && done(); };
+  if (!list.length) { end(); return; }
+  Promise.all(list.map((a) => a.finished)).then(end, end);
+}
+function ghostOf(r) {
+  // a página de antes vira uma "foto" viva (os mesmos nós) numa camada igual à das Configurações
+  const g = el('div', { class: r.className + ' set-ghost', 'aria-hidden': 'true' });
+  if (r.dataset.page) g.dataset.page = r.dataset.page;
+  g.append(...r.childNodes);
+  document.body.append(g);
+  return g;
+}
+let closing = false;
 export function closeSettings() {
   if (testStop) testStop();
   const r = root();
-  const done = () => { r.hidden = true; r.replaceChildren(); current = null; devCb = null; };
-  if (r.hidden || !withTransition('sheet-out', done)) done();
+  const done = () => { closing = false; r.hidden = true; delete r.dataset.anim; r.replaceChildren(); current = null; devCb = null; };
   document.removeEventListener('keydown', onKey);
+  if (r.hidden) { done(); return; }
+  if (reduce()) { done(); return; }
+  closing = true;
+  play(r, 'out', done);
 }
 function onKey(e) { if (e.key === 'Escape' && !$('#dlg-modal').open) closeSettings(); }
 
 export function openSettings(page, noAnim) {
   const r = root();
   // abrir: cresce do centro; trocar de página no celular: desliza
-  if (!noAnim) {
-    if (r.hidden && withTransition('sheet-in', () => openSettings(page, true))) return;
-    if (!r.hidden && isCompact() && (page || null) !== current && withTransition(page ? 'spush' : 'spop', () => openSettings(page, true))) return;
+  let enter = null, ghost = null;
+  if (!noAnim && !reduce()) {
+    if (r.hidden || closing) enter = 'in';
+    else if (isCompact() && (page || null) !== current) { enter = page ? 'push' : 'pop'; ghost = ghostOf(r); }
   }
+  closing = false;
   const mobile = isCompact();
   if (!page && !mobile) page = 'account';
   current = page || null;
@@ -588,5 +665,10 @@ export function openSettings(page, noAnim) {
     ...def[3]()));
   r.replaceChildren(bar, nav, main);
   document.removeEventListener('keydown', onKey); document.addEventListener('keydown', onKey);
+  if (enter === 'in') play(r, 'in');
+  else if (ghost) {
+    play(ghost, enter === 'push' ? 'under' : 'leave', () => ghost.remove());
+    play(r, enter);
+  }
 }
 export { copyText, friendLink, displayName, $$, renderCall };

@@ -4,7 +4,7 @@
    - /api, /ws e /events (e qualquer outro endereço) vão sempre direto para a rede, sem cache.
    - Nunca guarda resposta que dependa de cookie (Set-Cookie, Vary: Cookie) nem pedidos com Range.
    IMPORTANTE: a cada publicação, troque VERSION abaixo. É isso que faz o aplicativo instalado pegar a versão nova. */
-const VERSION = 'echo-2026-11-20-7';
+const VERSION = 'echo-2026-11-20-8';
 const CACHE = VERSION;
 
 const PRECACHE = [
@@ -12,7 +12,7 @@ const PRECACHE = [
   '/logo.svg', '/icon-m.svg', '/icon-192-m.png', '/icon-512-m.png', '/icon-maskable-512-m.png', '/apple-touch-icon-m.png', '/favicon-32-m.png',
   '/css/base.css', '/css/auth.css', '/css/app.css', '/css/shell.css', '/css/room.css', '/css/chat.css', '/css/games.css', '/css/themes.css', '/css/motion.css',
   '/js/main.js', '/js/state.js', '/js/util.js', '/js/api.js', '/js/i18n.js', '/js/modal.js', '/js/auth.js', '/js/pwa.js', '/js/passkey.js',
-  '/js/ui.js', '/js/ft.js', '/js/desktop.js', '/js/remote.js', '/js/dtln-core.js', '/js/mascot.js', '/js/settings.js', '/js/crop.js', '/js/call.js', '/js/audio.js', '/js/flags.js', '/js/activities.js', '/js/activities-i18n.js', '/js/chat.js', '/js/chat-i18n.js', '/js/emoji.js', '/js/sfx.js', '/js/room-extras.js', '/js/watch.js', '/css/g-watch.css', '/js/mixer.js', '/js/ringer.js', '/js/games-hub.js',
+  '/js/ui.js', '/js/ft.js', '/js/desktop.js', '/js/remote.js', '/js/novidades.js', '/js/notify.js', '/js/dtln-core.js', '/js/mascot.js', '/js/settings.js', '/js/crop.js', '/js/call.js', '/js/audio.js', '/js/flags.js', '/js/activities.js', '/js/activities-i18n.js', '/js/chat.js', '/js/chat-i18n.js', '/js/emoji.js', '/js/sfx.js', '/js/room-extras.js', '/js/watch.js', '/css/g-watch.css', '/js/mixer.js', '/js/ringer.js', '/js/games-hub.js',
 ];
 
 // Pastas do próprio app que podem ser guardadas quando aparecerem (jogos, worklets, fontes etc.).

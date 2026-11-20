@@ -21,7 +21,23 @@ export function bufToB64url(buf) {
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// App para Mac: o Touch ID vem do próprio app (chave no Keychain), porque o Electron não tem o do navegador.
+const deskPk = () => (typeof window !== 'undefined' && window.echoDesktop && window.echoDesktop.passkey) || null;
+let deskOk = null;
+async function useDesk() {
+  if (deskOk === null) { try { deskOk = !!(deskPk() && (await deskPk().available())); } catch { deskOk = false; } }
+  return deskOk;
+}
+async function deskCall(kind, o) {
+  let r;
+  try { r = await deskPk()[kind](o); } catch (e) { throw new PasskeyError('error', 0, e); }
+  if (!r || !r.ok) throw new PasskeyError((r && r.code) || 'error');
+  return r.r;
+}
+export const forgetLocal = (id) => { try { if (deskPk()) deskPk().forget(id); } catch { /* ok */ } };
+
 export async function passkeySupported() {
+  if (await useDesk()) return true;
   try {
     if (typeof window === 'undefined' || !window.PublicKeyCredential || !navigator.credentials) return false;
     if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return false;
@@ -47,9 +63,16 @@ function ensureApi() {
 const desc = (list) => (list || []).map((d) => ({ type: d.type, id: b64urlToBuf(d.id), ...(d.transports ? { transports: d.transports } : {}) }));
 
 export async function registerPasskey(deviceName) {
-  ensureApi();
+  const desk = await useDesk();
+  if (!desk) ensureApi();
   let o;
   try { o = await api('POST', '/passkey/register/begin', {}); } catch (e) { throw fromApi(e); }
+  if (desk) {
+    const c = await deskCall('create', o);
+    const body = { id: c.id, response: { clientDataJSON: c.clientDataJSON, attestationObject: c.attestationObject, transports: c.transports || ['internal'] } };
+    if (deviceName) body.name = String(deviceName).slice(0, 40);
+    try { return (await api('POST', '/passkey/register/finish', body)).passkey; } catch (e) { forgetLocal(c.id); throw fromApi(e); }
+  }
   let cred;
   try {
     cred = await navigator.credentials.create({
@@ -76,9 +99,16 @@ export async function registerPasskey(deviceName) {
 
 // username opcional: sem ele, o aparelho mostra as passkeys dessa página (credencial descobrível).
 export async function loginWithPasskey(username) {
-  ensureApi();
+  const desk = await useDesk();
+  if (!desk) ensureApi();
   let o;
   try { o = await api('POST', '/passkey/login/begin', username ? { username: String(username).trim().toLowerCase() } : {}); } catch (e) { throw fromApi(e); }
+  if (desk) {
+    const g = await deskCall('get', o);
+    try {
+      return (await api('POST', '/passkey/login/finish', { id: g.id, response: { clientDataJSON: g.clientDataJSON, authenticatorData: g.authenticatorData, signature: g.signature, userHandle: g.userHandle } })).user;
+    } catch (e) { const p = fromApi(e); if (p.code === 'invalid_credentials') { p.serverCode = p.code; p.code = 'no_passkey'; } throw p; }
+  }
   let cred;
   try {
     cred = await navigator.credentials.get({
@@ -104,4 +134,4 @@ export async function loginWithPasskey(username) {
 
 export const listPasskeys = async () => { try { return (await api('GET', '/passkeys')).passkeys; } catch (e) { throw fromApi(e); } };
 export const renamePasskey = async (id, name) => { try { return (await api('PATCH', '/passkeys/' + encodeURIComponent(id), { name })).passkey; } catch (e) { throw fromApi(e); } };
-export const deletePasskey = async (id) => { try { await api('DELETE', '/passkeys/' + encodeURIComponent(id)); } catch (e) { throw fromApi(e); } };
+export const deletePasskey = async (id) => { try { await api('DELETE', '/passkeys/' + encodeURIComponent(id)); forgetLocal(id); } catch (e) { throw fromApi(e); } };

@@ -19,6 +19,17 @@ contextBridge.exposeInMainWorld('echoDesktop', {
   askControl: (who) => ipcRenderer.invoke('ctl:ask', who),
   controlInput: (ev) => ipcRenderer.send('ctl:in', ev),
   stopControl: () => ipcRenderer.send('ctl:stop'),
+  // Touch ID (Mac): passkey do próprio app
+  passkey: {
+    available: () => ipcRenderer.invoke('pk:avail'),
+    create: (o) => ipcRenderer.invoke('pk:create', o),
+    get: (o) => ipcRenderer.invoke('pk:get', o),
+    forget: (id) => ipcRenderer.send('pk:forget', id),
+  },
+  // janela e avisos
+  show: () => ipcRenderer.send('win:show'),
+  badge: (n) => ipcRenderer.send('win:badge', n),
+  attention: () => ipcRenderer.send('win:attention'),
   onControlEnded: (cb) => { ipcRenderer.on('ctl:ended', () => cb()); },
 });
 ipcRenderer.on('share:port', (e) => { window.postMessage({ echoDesktop: 'pcm' }, '*', e.ports); });

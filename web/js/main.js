@@ -5,7 +5,7 @@ import { $, $$, el, toast, store, setIcon } from './util.js';
 import { D, CFG, ingest, userById, emit, on, remember } from './state.js';
 import { api, prehash, Events } from './api.js';
 import { t, tErr, applyI18n, setLang, getLang, onLang } from './i18n.js';
-import { applyTheme, openSettings, refreshSettings, onDevicesChanged, closeSettings } from './settings.js';
+import { applyTheme, openSettings, refreshSettings, onDevicesChanged, closeSettings, afterSiteUpdate } from './settings.js';
 import { uiSound } from './sfx.js';
 import { onRing, onRingOff, initRinger } from './ringer.js';
 import { gameHandlers } from './games-hub.js';
@@ -93,6 +93,7 @@ async function enterApp(user) {
   if (openParam) { history.replaceState(null, '', location.pathname + location.hash); openFromNotification(openParam); }
   document.title = 'Echo';
   handleDeepLink();
+  afterSiteUpdate();
 }
 
 async function loadAccounts() {

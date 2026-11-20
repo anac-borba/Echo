@@ -3,6 +3,7 @@
 //  - Quem recebe: tela de chamada (foto, nome, Recusar / Atender) e o toque repetindo até atender, recusar,
 //    a outra pessoa desistir ou passar 45 s.
 //  - Quem liga: um "chamando…" baixinho até a outra pessoa entrar; se ninguém atender em 45 s, a ligação encerra.
+import { localNotify } from './notify.js';
 import { el, icon, avatar, displayName, toast } from './util.js';
 import { D, userById, on, emit, dmRoom } from './state.js';
 import { t } from './i18n.js';
@@ -47,7 +48,8 @@ export function onRing(m) {
   void node.offsetWidth; requestAnimationFrame(() => node.classList.add('on'));
   const play = () => { uiSound('ringtone'); try { navigator.vibrate && navigator.vibrate([400, 200, 400]); } catch {} };
   play();
-  inc = { from: m.from, room: m.room, node, loop: setInterval(play, 3000), timer: setTimeout(() => missed(), RING_MS) };
+  const sys = localNotify({ title: displayName(u), body: t('call.incoming'), tag: 'ring', call: true });
+  inc = { from: m.from, room: m.room, node, sys, loop: setInterval(play, 3000), timer: setTimeout(() => missed(), RING_MS) };
   redraw();
 }
 function answer() {
@@ -71,6 +73,7 @@ function missed() {
 function stopIncoming() {
   if (!inc) return;
   clearInterval(inc.loop); clearTimeout(inc.timer);
+  try { inc.sys && inc.sys.close(); } catch {}
   const n = inc.node; n.classList.remove('on'); setTimeout(() => n.remove(), 260);
   try { navigator.vibrate && navigator.vibrate(0); } catch {}
   inc = null; D.ringing = null;

@@ -141,6 +141,10 @@ export async function joinRoom(room) {
   } catch {}
   try { navigator.audioSession && (navigator.audioSession.type = 'play-and-record'); } catch {}
   C.muted = false; C.deaf = false; C.held = false; C.t0 = null; C.stat = {};
+  // volume no zero vindo de uma ligação antiga deixava a pessoa muda sem ninguém perceber: cada ligação começa audível
+  let fixed = false;
+  for (const k of ['volVoice', 'micVol']) if (!(Number(CFG[k]) >= 0.1)) { CFG[k] = 1; fixed = true; }
+  if (fixed) { saveCfg(); setMicVolume({ own: 1 }); }
   startTick();
   renderHeader(); renderPeople(); renderMode(); renderDock();
   setConn('wait', t('conn.connecting'));
@@ -365,7 +369,11 @@ async function setSenderParams(sender, patch, tries = 8) {
 /** No iPhone o volume do elemento é só leitura e o mixer não roda: o volume da "Voz" vira um pedido para quem fala. */
 function sendWantVol() {
   if (mixerActive() || volSettable) return;
-  if (C.dc && C.dc.readyState === 'open') C.dc.send(JSON.stringify({ v: 1, vol: Math.min(1.5, Math.max(0, Number(CFG.volVoice) || 0)) }));
+  if (C.dc && C.dc.readyState === 'open') {
+    // nunca mexeu no volume = 100% (antes, sem valor salvo, o pedido saía como 0 e a outra pessoa ficava muda)
+    const v = Number(CFG.volVoice ?? 1);
+    C.dc.send(JSON.stringify({ v: 1, vol: Math.min(1.5, Math.max(0, Number.isFinite(v) ? v : 1)) }));
+  }
 }
 function sendFlags() { if (C.dc && C.dc.readyState === 'open') C.dc.send(JSON.stringify({ v: 1, muted: C.muted || !micOpen(), deaf: C.deaf })); }
 const sfxIn = [];

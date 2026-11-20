@@ -227,7 +227,7 @@
   .view-body { padding: 12px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left)); overflow-x: hidden; }
   .call-pill { display: flex; top: calc(8px + env(safe-area-inset-top)); }
   .call-pill[hidden] { display: none !important; }
-  .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 0 max(14px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)); padding: 6px; border-radius: 36px; background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(26px); backdrop-filter: saturate(180%) blur(26px); box-shadow: inset 0 0 0 1px var(--hair), 0 16px 40px rgba(0,0,0,.2); }
+  .tabbar { display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; margin: 0 max(14px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)); padding: 6px; border-radius: 36px; background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(26px); backdrop-filter: saturate(180%) blur(26px); box-shadow: inset 0 0 0 1px var(--hair), 0 16px 40px rgba(0,0,0,.2); }
   .tabbar button { position: relative; display: grid; place-items: center; align-content: center; gap: 3px; border: 0; background: none; min-height: 56px; padding: 6px 0; color: var(--mut); font-size: .68rem; font-weight: 650; border-radius: 30px; }
   .tabbar button .ico { width: 22px; height: 22px; }
   .tabbar button { -webkit-tap-highlight-color: transparent; transition: background .2s var(--ease), color .2s var(--ease), transform .12s var(--ease); }
@@ -1031,3 +1031,35 @@ html, body { min-height: var(--app-h, 100%); }
 .hm-wb { display: flex; gap: 10px; margin-top: 14px; align-items: center; }
 #view-home .view-body:has(.hm-welcome) { display: flex; }
 #view-home .view-body:has(.hm-welcome) > .page { flex: 1; max-width: none; }
+
+/* fim da ligação: mesma cor de fundo da ligação; nome e "Encerrada" no topo, centralizados (sem cartão preto);
+   a foto fica no mesmo lugar e encolhe um pouco, os botões sobem de baixo */
+.ce { background-color: color-mix(in srgb, var(--ft-c, #3a3a40) 34%, #050506); }
+.ce.ended .ce-card { flex-direction: column; align-items: center; gap: 2px; padding: 0; background: none; width: auto; }
+.ce.ended .ce-card b { font-size: 20px; }
+.ce.ended .ce-card span { font-size: 15px; color: rgba(255,255,255,.6); }
+.ce.ended { padding-top: calc(env(safe-area-inset-top) + 14px); }
+.ce .ce-av .av-xl { width: clamp(150px, 26vh, 230px); height: clamp(150px, 26vh, 230px); font-size: 5rem; }
+.ce.ended .ce-av .av-xl { animation: ce-dim .6s var(--ease-out, ease-out) .1s forwards; opacity: 1; }
+@keyframes ce-dim { to { opacity: .45; transform: scale(.9); } }
+.ce.ended .ce-acts { animation: ce-up .42s var(--ease-out, ease-out) .12s backwards; }
+@keyframes ce-up { from { opacity: 0; transform: translateY(24px); } }
+
+/* topo no celular: uma faixa sólida embaixo do relógio/notch, para nada passar borrado ou cortado por trás */
+@media (max-width: 820px) {
+  .app:not(.in-room)::before { content: ""; position: fixed; z-index: 60; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--bg); pointer-events: none; }
+}
+.ce.ended .ce-av { margin-bottom: 64px; }
+
+/* ───────────── Novidades (Configurações › Atualizações) ───────────── */
+.news { display: grid; gap: 0; padding: 4px 16px 8px; }
+.news-d { margin: 10px 0 6px; font-size: .8rem; font-weight: 600; color: var(--mut); }
+.news-it { display: grid; gap: 4px; padding: 14px 0; border-top: 1px solid var(--sg-line, var(--hair)); }
+.news-d + .news-it { border-top: 0; }
+.news-it.has-clip { grid-template-columns: 128px 1fr; gap: 18px; align-items: center; }
+.news-tx b { display: block; font-size: 1rem; font-weight: 600; letter-spacing: -.01em; margin-bottom: 4px; }
+.news-tx p { margin: 0; color: var(--mut); font-size: .9rem; line-height: 1.45; max-width: 52ch; }
+/* moldura de celular: borda escura fina e cantos do iPhone */
+.news-phone { position: relative; padding: 5px; border-radius: 24px; background: #0b0b0d; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 10px 30px rgba(0,0,0,.25); }
+.news-v { display: block; width: 100%; aspect-ratio: 1 / 2; object-fit: cover; border-radius: 19px; background: #16131D; }
+@media (min-width: 821px) { .news-it.has-clip { grid-template-columns: 150px 1fr; gap: 24px; } }

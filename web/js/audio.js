@@ -239,15 +239,17 @@ function watchChain(ac, src, last, nodes) {
   try {
     const aIn = ac.createAnalyser(), aOut = ac.createAnalyser(); aIn.fftSize = aOut.fftSize = 1024;
     src.connect(aIn); last.connect(aOut); nodes.push(aIn, aOut);
-    const bi = new Float32Array(1024), bo = new Float32Array(1024); let live = 0, dead = 0, n = 0;
+    const bi = new Float32Array(1024), bo = new Float32Array(1024); let live = 0, dead = 0;
     const rms = (b) => { let x = 0; for (const v of b) x += v * v; return Math.sqrt(x / b.length); };
+    // confere a ligação inteira (não só o começo): quando há voz no microfone (não só ruído) e a saída fica muda
     const iv = setInterval(() => {
+      if (chainBroken) { clearInterval(iv); return; }
       aIn.getFloatTimeDomainData(bi); aOut.getFloatTimeDomainData(bo);
       const ri = rms(bi), ro = rms(bo);
-      if (ri > 0.004 && vol.own * vol.peer > 0.05) { live++; if (ro < ri * 0.003 * vol.own * vol.peer) dead++; }
-      if (++n >= 60 || live >= 12) {
-        clearInterval(iv);
-        if (live >= 8 && dead / live > 0.9) { chainBroken = true; console.warn('filtros do microfone mudos: usando o microfone direto'); onBroken && onBroken(); }
+      if (ri > 0.012 && vol.own * vol.peer > 0.05) { live++; if (ro < ri * 0.003 * vol.own * vol.peer) dead++; }
+      if (live >= 20) {
+        if (dead / live > 0.9) { clearInterval(iv); chainBroken = true; console.warn('filtros do microfone mudos: usando o microfone direto'); onBroken && onBroken(); }
+        live = 0; dead = 0;
       }
     }, 100);
     nodes.push({ disconnect: () => clearInterval(iv) });
