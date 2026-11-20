@@ -5,6 +5,7 @@ export const NOVIDADES = [
   {
     date: '2026-11-20',
     items: [
+      { t: 'Início sem barra de abas', d: 'No celular, o morceguinho no canto abre o Perfil e as Configurações, e o controle abre os Jogos. Quem importa fica fixado no topo em fotos grandes, com o anel verde quando está online.' },
       { t: 'Ligação no celular, do jeito do FaceTime', d: 'Fundo calmo, com a foto, o nome e o tempo no meio. Áudio, Mudo e Desligar ficam sempre à mão; arraste a barra para cima e o resto aparece em lista, como no FaceTime.', clip: '/img/novidades/ligacao.mp4' },
       { t: 'Adicionar amigo mais bonito', d: 'O botão do Início ganhou a cor do morceguinho e um + redondo.' },
       { t: 'Fim da ligação sem susto', d: 'Desligou: a tela continua com a cor da ligação e mostra quanto tempo vocês conversaram, com atalhos para mandar mensagem ou ligar de novo.', clip: '/img/novidades/encerrada.mp4' },

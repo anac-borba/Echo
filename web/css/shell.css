@@ -1086,3 +1086,47 @@ html, body { min-height: var(--app-h, 100%); }
 .hm-empty .text-b { display: inline-flex; align-items: center; gap: 8px; color: var(--mut); }
 .hm-empty .text-b svg { width: 17px; height: 17px; }
 .hm-empty .text-b:active { opacity: .6; }
+
+/* ═══════════ celular sem barra de abas (Início como o iMessage/Capy) ═══════════ */
+@media (max-width: 820px) {
+  .tabbar { display: none !important; }
+  .topbar.hm-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top) + 8px) 16px 4px; }
+  .hm-bat { justify-self: start; position: relative; width: 48px; height: 44px; border: 0; padding: 0; background: none; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .hm-bat .mascot-box { width: 44px; height: 44px; margin-top: 8px; }
+  .hm-bat:active .mascot-box { transform: scale(.92); transition: transform var(--m-tap) var(--ease-out); }
+  .topbar.hm-head .hm-title { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; }
+  .hm-acts { justify-self: end; display: flex; gap: 8px; }
+  .hm-acts .hm-ib { position: relative; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; }
+  .hm-acts .hm-ib .ico { width: 19px; height: 19px; }
+  .hm-dot { position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: #FF453A; box-shadow: 0 0 0 2px var(--bg); }
+
+  /* fixados: centralizados, seja 1 ou 4 */
+  .hm-pins { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px 26px; padding: 26px 16px 22px; }
+  .pin { position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px; border: 0; padding: 0; background: none; color: var(--ink); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .pin-av { display: block; border-radius: 20px; transition: transform var(--m-tap) var(--ease-out); }
+  .pin:active .pin-av { transform: scale(.94); }
+  .pin-av .av { width: 64px !important; height: 64px !important; border-radius: 20px !important; }
+  .pin-av .av-img, .pin-av .av img { width: 64px !important; height: 64px !important; border-radius: 20px !important; font-size: 25px !important; }
+  .pin-av .av .st, .pin-av .av .av-st { display: none !important; }
+  .pin.on .pin-av { box-shadow: 0 0 0 2.5px var(--bg), 0 0 0 4.5px #30D158; }
+  .pin.ringing .pin-av { box-shadow: 0 0 0 2.5px var(--bg), 0 0 0 4.5px #30D158; animation: pin-ring 1.2s ease-in-out infinite; }
+  @keyframes pin-ring { 50% { transform: scale(1.06); } }
+  .pin-n { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pin-new { position: absolute; z-index: 2; top: -3px; right: -3px; width: 13px; height: 13px; border-radius: 50%; background: #0A84FF; box-shadow: 0 0 0 2.5px var(--bg); }
+  .pin-typing { position: absolute; z-index: 2; top: -16px; left: 50%; height: 22px; padding: 0 8px; border-radius: 11px; background: var(--card, #2C2C2E); box-shadow: 0 0 0 2px var(--bg); display: flex; align-items: center; gap: 3px; }
+  .pin-typing i { width: 5px; height: 5px; border-radius: 50%; background: var(--ink); animation: pin-dot 1.2s infinite; }
+  .pin-typing i:nth-child(2) { animation-delay: .2s; } .pin-typing i:nth-child(3) { animation-delay: .4s; }
+  @keyframes pin-dot { 0%, 60%, 100% { opacity: .3; } 30% { opacity: 1; } }
+
+  /* lista do resto: sem foto, só nome e recado; bolinha azul quando tem novidade */
+  .hm-list.flat .conv-row > .av, .hm-list.flat .conv-row > .av-wrap, .hm-list.flat .conv-row > .avatar { display: none !important; }
+  .hm-list.flat .conv-row { position: relative; padding-left: 34px; }
+  .hm-list.flat .conv-row.has-unread::before { content: ""; position: absolute; left: 14px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%; background: #0A84FF; }
+  .hm-list.flat .conv-row .unread { display: none; }
+
+  /* telas sem a barra: "voltar" no topo */
+  .topbar.has-back { flex-wrap: wrap; }
+  .tb-back { flex-basis: 100%; display: inline-flex; align-items: center; gap: 2px; align-self: flex-start; margin: 0 0 4px -6px; min-height: 40px; padding: 0 8px 0 0; border: 0; background: none; color: var(--accent); font: inherit; font-size: 17px; cursor: pointer; }
+  .tb-back .ico { width: 22px; height: 22px; }
+  .view-body { padding-bottom: env(safe-area-inset-bottom); }
+}

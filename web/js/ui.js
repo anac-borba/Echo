@@ -55,7 +55,8 @@ export function go(name, id) {
 }
 /** Tipo de animação ao trocar de tela, como no iPhone:
  *  zoom = abrir a ligação (cresce do centro); push/pop = entrar/sair de uma conversa no celular; fade = trocar de aba. */
-const LEVEL = { home: 0, friends: 0, calls: 0, games: 0, profile: 0, dm: 1, server: 1, room: 2 };
+// no celular não há mais barra de abas: Jogos e Perfil entram empurrando a partir do Início (e voltam)
+const LEVEL = { home: 0, games: 1, profile: 1, calls: 1, friends: 2, dm: 1, server: 1, room: 3 };
 function transitionKind(from, to) {
   if (to === 'room') return 'zoom';
   if (from === 'room') return 'unzoom';
@@ -337,15 +338,22 @@ function pageShell(view, title, sub) {
   const old = view.querySelector(':scope > .view-body');
   keepScroll = old && view.dataset.k === key && old.scrollTop > 0 ? { view, top: old.scrollTop } : null;
   view.dataset.k = key;
+  // celular sem barra de abas: as telas que não são o Início têm "voltar" no topo
+  const back = isCompact() && D.view.name !== 'home' && BACK_TO[D.view.name]
+    ? el('button', { class: 'tb-back', type: 'button', 'aria-label': t('call.back'), onClick: () => go(BACK_TO[D.view.name]()) }, icon('i-chev-l', 'ico'), el('span', { text: t(BACK_LABEL[D.view.name] || 'nav.home') }))
+    : null;
   view.replaceChildren(
-    el('header', { class: 'topbar' },
+    el('header', { class: 'topbar' + (back ? ' has-back' : '') }, back,
       el('div', { class: 'tb-t' }, el('h1', { text: title }), sub ? el('p', { text: sub }) : null),
       // só aparece quando algo está errado (sem conexão)
       up ? null : el('div', { class: 'chips' }, el('span', { class: 'chip' }, el('span', { class: 'dot warn' }), t('conn.off.short')))),
     el('div', { class: 'view-body' }, body));
   return body;
 }
+const BACK_TO = { games: () => 'home', profile: () => 'home', calls: () => 'home', friends: () => (lastView.name === 'profile' ? 'profile' : 'home') };
+const BACK_LABEL = { friends: 'nav.profile' };
 let homeQuery = '';
+let homeBat = null;
 let homeMascot = null;
 function renderHome() {
   const v = pageShell(els.vHome, t('hi.hello', { name: displayName(D.me).split(' ')[0] }), null);
@@ -369,6 +377,7 @@ function renderHome() {
         D.incoming.length ? el('button', { class: 'text-b', type: 'button', onClick: () => { friendsTab = 'pending'; go('friends'); } }, t('home.reqs') + ' (' + D.incoming.length + ')') : null)));
     return;
   }
+  if (D.friends.length && isCompact()) { renderHomePhone(v); return; }
   if (!D.friends.length) {
     // vazio: o morceguinho, o que é esta tela e a saída
     v.append(el('div', { class: 'hm-empty' }, homeMascot, el('b', { text: t('home.empty.t') }), el('span', { class: 'd', text: t('home.empty.d') }),
@@ -392,6 +401,41 @@ function renderHome() {
     draw();
     v.append(list);
   }
+}
+/* Início no celular (como o iMessage/Capy): no topo o morcego (abre Perfil e Configurações), "Echo",
+   + (adicionar amigo) e o controle (Jogos). Embaixo, até 4 pessoas fixadas em fotos grandes (quem está ligando,
+   online, com recado novo ou falou por último), centralizadas; depois a lista do resto, só com nome e recado. */
+function renderHomePhone(v) {
+  if (isCompact() && els.tabbar) els.tabbar.hidden = true;
+  const top = els.vHome.querySelector('.topbar');
+  if (!homeBat) homeBat = mascot('hm-bat-m');
+  const reqN = D.incoming.length;
+  top.className = 'topbar hm-head';
+  top.replaceChildren(
+    el('button', { class: 'hm-bat', type: 'button', 'aria-label': t('nav.profile'), title: t('nav.profile'), onClick: () => go('profile') }, homeBat, reqN ? el('span', { class: 'hm-dot', 'aria-label': t('home.reqs') }) : null),
+    el('h1', { class: 'hm-title', text: 'Echo' }),
+    el('div', { class: 'hm-acts' },
+      el('button', { class: 'hm-ib', type: 'button', title: t('friends.add'), 'aria-label': t('friends.add'), onClick: () => { friendsTab = 'add'; go('friends'); } }, icon('i-plus')),
+      el('button', { class: 'hm-ib', type: 'button', title: t('nav.games'), 'aria-label': t('nav.games'), onClick: () => go('games') }, icon('t-games'), pendingInvites() ? el('span', { class: 'hm-dot' }) : null)));
+  if (!convsReady) {
+    v.append(el('div', { class: 'hm-skel', role: 'status', 'aria-label': t('loading') }, ...[40, 30, 46].map(() => el('div', {}, el('span', { class: 'a' }), el('span', { class: 't' }, el('i'), el('i'))))));
+    return;
+  }
+  const at = (f) => ((lastOf(f.id) || {}).at || 0);
+  const score = (f) => (isRinging(f.id) ? 8 : 0) + (f.inRoom ? 4 : 0) + (f.online ? 2 : 0) + (unreadOf(f.id) ? 1 : 0);
+  const pins = [...D.friends].sort((a, b) => (score(b) - score(a)) || (at(b) - at(a))).slice(0, 4);
+  const pinIds = new Set(pins.map((f) => f.id));
+  v.append(el('div', { class: 'hm-pins' }, ...pins.map(pinTile)));
+  const rest = D.friends.filter((f) => !pinIds.has(f.id)).sort((a, b) => (isRinging(b.id) - isRinging(a.id)) || (at(b) - at(a)));
+  if (rest.length) v.append(el('div', { class: 'hm-list flat' }, ...rest.map(convRow)));
+}
+function pinTile(f) {
+  const n = unreadOf(f.id), typing = isTyping(f.id), ringing = isRinging(f.id);
+  return el('button', { class: 'pin' + (f.online ? ' on' : '') + (ringing ? ' ringing' : ''), type: 'button', 'aria-label': displayName(f) + (n ? ' · ' + n : ''), onClick: () => (ringing ? answerRing(f.id) : go('dm', f.id)) },
+    typing ? el('span', { class: 'pin-typing', 'aria-hidden': 'true' }, el('i'), el('i'), el('i')) : null,
+    n && !typing ? el('span', { class: 'pin-new', 'aria-hidden': 'true' }) : null,
+    el('span', { class: 'pin-av' }, avatar(f, 'lg')),
+    el('span', { class: 'pin-n', text: displayName(f).split(' ')[0] }));
 }
 /** Quem está me chamando agora (definido pelo toque de chamada em main.js). */
 export const isRinging = (uid) => !!(D.ringing && D.ringing.from === uid);
@@ -821,6 +865,7 @@ export function renderAll() {
   for (const k of ['home', 'friends', 'calls', 'games', 'server', 'room', 'profile', 'dm']) { const node = viewNode(k); if (node) node.hidden = k !== v; }
   if (v !== 'dm') unmountChat(els.vDm);
   renderRail(); renderSide(); renderCallbar(); renderUserPanel(); renderTabbar();
+  if (els.tabbar) els.tabbar.hidden = isCompact();
   keepScroll = null;
   if (v === 'home') renderHome(); else if (v === 'friends') renderFriends(); else if (v === 'calls') renderCalls(); else if (v === 'games') renderGames(els.vGames); else if (v === 'server') renderServer(); else if (v === 'room') renderCall(); else if (v === 'profile') renderProfile(); else if (v === 'dm') renderDm();
   if (keepScroll) { const b = keepScroll.view.querySelector(':scope > .view-body'); if (b) b.scrollTop = keepScroll.top; keepScroll = null; }
