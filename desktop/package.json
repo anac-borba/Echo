@@ -1,7 +1,7 @@
 {
   "name": "echo-desktop",
   "productName": "Echo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Echo para computador: ligações, transmissão de tela e o som do computador junto.",
   "main": "src/main.js",
   "author": "Ana Clara Alcantara",
@@ -12,7 +12,7 @@
     "dist": "electron-builder --publish never"
   },
   "devDependencies": {
-    "electron": "33.2.1",
+    "electron": "^39.0.0",
     "electron-builder": "25.1.8"
   },
   "build": {
@@ -29,7 +29,8 @@
       "extendInfo": {
         "NSMicrophoneUsageDescription": "O Echo usa o microfone nas ligações.",
         "NSCameraUsageDescription": "O Echo não usa a câmera, mas o macOS pede esta frase para compartilhar a tela.",
-        "NSScreenCaptureUsageDescription": "O Echo transmite a tela que você escolher."
+        "NSScreenCaptureUsageDescription": "O Echo transmite a tela que você escolher.",
+        "NSAudioCaptureUsageDescription": "O Echo leva o som do computador junto quando você transmite a tela."
       }
     },
     "dmg": { "title": "Echo" },
