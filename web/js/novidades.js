@@ -5,7 +5,8 @@ export const NOVIDADES = [
   {
     date: '2026-11-20',
     items: [
-      { t: 'Ligação no celular, do jeito do FaceTime', d: 'Mudo, Áudio e Desligar ficam sempre à mão. Arraste a barra para cima para ver o resto: silenciar, assistir, jogar, efeitos e mensagens.', clip: '/img/novidades/ligacao.mp4' },
+      { t: 'Ligação no celular, do jeito do FaceTime', d: 'Fundo calmo, com a foto, o nome e o tempo no meio. Áudio, Mudo e Desligar ficam sempre à mão; arraste a barra para cima e o resto aparece em lista, como no FaceTime.', clip: '/img/novidades/ligacao.mp4' },
+      { t: 'Adicionar amigo mais bonito', d: 'O botão do Início ganhou a cor do morceguinho e um + redondo.' },
       { t: 'Fim da ligação sem susto', d: 'Desligou: a tela continua com a cor da ligação e mostra quanto tempo vocês conversaram, com atalhos para mandar mensagem ou ligar de novo.', clip: '/img/novidades/encerrada.mp4' },
       { t: 'Configurações que deslizam', d: 'A folha sobe ao abrir e cada página entra empurrando a anterior, como no iPhone.', clip: '/img/novidades/config.mp4' },
       { t: 'Sua voz chegando sempre', d: 'Corrigido: às vezes o iPhone pedia para o outro lado mandar o microfone no volume zero. Agora toda ligação começa com o volume normal.' },

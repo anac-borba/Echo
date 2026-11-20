@@ -525,9 +525,14 @@ export function afterSiteUpdate() {
 /* Novidades: cada item com um clipe numa moldura de celular. O vídeo só toca quando aparece na tela. */
 function newsBox() {
   const fmt = (d) => new Date(d + 'T12:00:00').toLocaleDateString(getLang() === 'en' ? 'en' : 'pt-BR', { day: 'numeric', month: 'long' });
-  const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach((e) => {
-    const v = e.target; if (e.isIntersecting) { v.play().catch(() => {}); } else v.pause();
-  }), { threshold: 0.4 }) : null;
+  // só um clipe toca por vez (o mais visível): vários vídeos juntos travam o iPhone
+  const vis = new Map();
+  const pick = () => {
+    let best = null, br = 0.35;
+    for (const [v, r] of vis) if (r > br) { best = v; br = r; }
+    for (const v of vis.keys()) { if (v === best) { if (v.paused) v.play().catch(() => {}); } else if (!v.paused) v.pause(); }
+  };
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => { es.forEach((e) => vis.set(e.target, e.intersectionRatio)); pick(); }, { threshold: [0, .25, .5, .75, 1] }) : null;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const box = el('div', { class: 'news' });
   for (const rel of NOVIDADES) {

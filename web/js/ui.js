@@ -365,15 +365,15 @@ function renderHome() {
     const top = els.vHome.querySelector('.topbar'); if (top) top.hidden = true;
     v.append(el('div', { class: 'hm-welcome' }, homeMascot, el('b', { text: t('hi.hello', { name: displayName(D.me).split(' ')[0] }) }), el('span', { class: 'd', text: t('home.pick') }),
       el('div', { class: 'hm-wb' },
-        el('button', { class: 'primary-w', type: 'button', onClick: () => { friendsTab = 'add'; go('friends'); } }, t('home.addFriend')),
+        el('button', { class: 'add-pill', type: 'button', onClick: () => { friendsTab = 'add'; go('friends'); } }, el('span', { class: 'add-ic' }, icon('i-plus', 'i')), el('span', { text: t('home.addFriend') })),
         D.incoming.length ? el('button', { class: 'text-b', type: 'button', onClick: () => { friendsTab = 'pending'; go('friends'); } }, t('home.reqs') + ' (' + D.incoming.length + ')') : null)));
     return;
   }
   if (!D.friends.length) {
     // vazio: o morceguinho, o que é esta tela e a saída
     v.append(el('div', { class: 'hm-empty' }, homeMascot, el('b', { text: t('home.empty.t') }), el('span', { class: 'd', text: t('home.empty.d') }),
-      el('button', { class: 'primary-w', type: 'button', onClick: () => { friendsTab = 'add'; go('friends'); } }, t('home.addFriend')),
-      el('button', { class: 'text-b', type: 'button', onClick: () => copyText(friendLink()).then(() => toast(t('copied'))) }, t('home.copyInvite'))));
+      el('button', { class: 'add-pill', type: 'button', onClick: () => { friendsTab = 'add'; go('friends'); } }, el('span', { class: 'add-ic' }, icon('i-plus', 'i')), el('span', { text: t('home.addFriend') })),
+      el('button', { class: 'text-b', type: 'button', onClick: () => copyText(friendLink()).then(() => toast(t('copied'))) }, icon('i-link', 'i'), el('span', { text: t('home.copyInvite') }))));
   } else if (!convsReady) {
     v.append(bar);
     // carregando: o desenho da lista em cinza

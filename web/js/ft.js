@@ -60,49 +60,69 @@ export function initFt() {
    Fechada: só Mudo, Áudio e Desligar, grandes. Arrastando para cima (ou tocando no puxador) aparecem as outras opções.
    Os botões daqui só "apertam" os botões de sempre da barra (que ficam escondidos no celular). */
 const press = (id) => { const b = $id(id); if (b) b.click(); };
-function sbtn(cls, ico, key, onTap) {
-  const b = el('button', { class: 'fts-b k-' + cls, type: 'button', onClick: (e) => { if (S.justDragged) { e.preventDefault(); return; } onTap(); } },
-    el('span', { class: 'fts-c' }, icon(ico, 'i')), el('span', { class: 'fts-l', text: t(key) }));
-  b.dataset.key = key;
-  return b;
-}
-function tile(cls, ico, key, target) {
-  const b = el('button', { class: 'fts-t k-' + cls, type: 'button', onClick: () => { if (S.justDragged) return; setSheet(false); setTimeout(() => press(target), 60); } },
-    el('span', { class: 'fts-c' }, icon(ico, 'i')), el('span', { class: 'fts-l', text: t(key) }));
-  return b;
-}
 const S = { open: false, justDragged: false };
+function sbtn(key, ico, label, onTap) {
+  const b = el('button', { class: 'fts-b k-' + key, type: 'button', onClick: (e) => { if (S.justDragged) { e.preventDefault(); return; } onTap(); } },
+    el('span', { class: 'fts-c' }, icon(ico, 'i')), el('span', { class: 'fts-l', text: label }));
+  return b;
+}
+// linha da lista: ícone redondo colorido, título, explicação e (às vezes) o estado à direita
+function row(key, ico, color, title, sub, target, keepOpen) {
+  const st = el('span', { class: 'fts-st' });
+  const r = el('button', { class: 'fts-r k-' + key, type: 'button', onClick: () => {
+    if (S.justDragged) return;
+    if (keepOpen) { press(target); return; }
+    setSheet(false); setTimeout(() => press(target), 120);
+  } },
+    (() => { const ic = el('span', { class: 'fts-ic' }, icon(ico, 'i')); ic.style.setProperty('--ic', color); return ic; })(),
+    el('span', { class: 'fts-tx' }, el('b', { text: title }), el('small', { text: sub })), st);
+  r.st = st;
+  return r;
+}
+const TX = {
+  pt: { audio: 'Áudio', mute: 'Mudo', end: 'Desligar', more: 'Mais opções',
+    chat: ['Mensagens', 'Conversar sem sair da ligação'], watch: ['Assistir juntos', 'Vídeos ao mesmo tempo'], games: ['Jogar', 'Jogos para vocês dois'],
+    sfx: ['Efeitos sonoros', 'Sons rápidos para a ligação'], deaf: ['Silenciar tudo', 'Para de ouvir e de falar'], screen: ['Transmitir a tela', 'Mostrar o que está na sua tela'],
+    info: ['Conexão', 'Qualidade e detalhes da ligação'], on: 'Ligado' },
+  en: { audio: 'Audio', mute: 'Mute', end: 'End', more: 'More options',
+    chat: ['Messages', 'Chat without leaving the call'], watch: ['Watch together', 'Videos at the same time'], games: ['Play', 'Games for two'],
+    sfx: ['Sound effects', 'Quick sounds for the call'], deaf: ['Deafen', 'Stop hearing and talking'], screen: ['Share screen', 'Show what is on your screen'],
+    info: ['Connection', 'Call quality and details'], on: 'On' },
+};
 function buildSheet() {
-  S.mic = sbtn('mic', 'r-mic', 'fts.mute', () => press('btn-mic'));
-  S.audio = sbtn('audio', 'r-vol', 'fts.audio', () => press('btn-mic-opts'));
-  S.leave = sbtn('end', 'r-end', 'fts.leave', () => press('btn-leave'));
-  S.deaf = tile('deaf', 'r-hp', 'fts.deaf', 'btn-deaf');
-  S.deaf.onclick = null; // silenciar não fecha a folha: dá para ver o estado mudar
-  S.deaf.addEventListener('click', () => { if (!S.justDragged) press('btn-deaf'); });
-  S.screen = tile('screen', 'r-scr', 'fts.screen', 'btn-screen');
-  S.chat = tile('chat', 'c-chat', 'fts.chat', 'btn-chat');
-  S.chat.querySelector('.fts-c').append(el('span', { class: 'dk-dot fts-dot', hidden: true }));
-  S.grab = el('button', { class: 'fts-grab', type: 'button', 'aria-label': t('fts.more'), 'aria-expanded': 'false', onClick: () => { if (!S.justDragged) setSheet(!S.open); } });
-  S.more = el('div', { class: 'fts-more', 'aria-hidden': 'true' },
-    S.deaf, S.screen, tile('watch', 'c-watch', 'fts.watch', 'btn-watch'), tile('games', 't-games', 'fts.games', 'btn-games'),
-    tile('sfx', 'c-sfx', 'fts.sfx', 'btn-sfx'), S.chat, tile('info', 'i-info', 'fts.info', 'conn'));
-  S.el = el('div', { class: 'fts', id: 'fts' }, S.grab, el('div', { class: 'fts-main' }, S.mic, S.audio, S.leave), S.more);
+  const L = TX[(document.documentElement.lang || 'pt').startsWith('en') ? 'en' : 'pt'];
+  S.L = L;
+  S.audio = sbtn('audio', 'r-vol', L.audio, () => press('btn-mic-opts'));
+  S.mic = sbtn('mic', 'r-mic', L.mute, () => press('btn-mic'));
+  S.leave = sbtn('end', 'r-end', L.end, () => press('btn-leave'));
+  S.chat = row('chat', 'c-chat', '#0A84FF', ...L.chat, 'btn-chat');
+  S.chat.st.append(el('span', { class: 'dk-dot', hidden: true }));
+  S.deaf = row('deaf', 'r-hp', '#636366', ...L.deaf, 'btn-deaf', true);
+  S.screen = row('screen', 'r-scr', '#5E5CE6', ...L.screen, 'btn-screen');
+  const g1 = el('div', { class: 'fts-grp' }, S.chat, row('watch', 'c-watch', '#FF375F', ...L.watch, 'btn-watch'), row('games', 't-games', '#30D158', ...L.games, 'btn-games'), row('sfx', 'c-sfx', '#FF9F0A', ...L.sfx, 'btn-sfx'));
+  const g2 = el('div', { class: 'fts-grp' }, S.deaf, S.screen, row('info', 'i-info', '#8E8E93', ...L.info, 'conn'));
+  [...g1.children, ...g2.children].forEach((r, i) => r.style.setProperty('--i', i));
+  S.grab = el('button', { class: 'fts-grab', type: 'button', 'aria-label': L.more, 'aria-expanded': 'false', onClick: () => { if (!S.justDragged) setSheet(!S.open); } });
+  S.more = el('div', { class: 'fts-more', 'aria-hidden': 'true', inert: '' }, g1, g2);
+  S.el = el('div', { class: 'fts', id: 'fts' }, S.grab, el('div', { class: 'fts-main' }, S.audio, S.mic, S.leave), S.more);
   S.scrim = el('div', { class: 'fts-scrim', onClick: () => setSheet(false) });
   F.room.append(S.scrim, S.el);
-  // espelha o estado dos botões de sempre
   const mirror = () => {
     const bm = $id('btn-mic'), bd = $id('btn-deaf'), sm = $id('sp-mic'), sd = $id('sp-deaf');
     const muted = (bm && bm.getAttribute('aria-pressed') === 'true') || (sm && sm.classList.contains('muted'));
     const deaf = (bd && bd.getAttribute('aria-pressed') === 'true') || (sd && sd.classList.contains('muted'));
     S.mic.classList.toggle('on', !!muted); S.mic.setAttribute('aria-pressed', String(!!muted));
     S.mic.querySelector('use').setAttribute('href', muted ? '#r-micoff' : '#r-mic');
-    S.deaf.classList.toggle('on', !!deaf); S.deaf.setAttribute('aria-pressed', String(!!deaf));
-    S.deaf.querySelector('use').setAttribute('href', deaf ? '#r-hpoff' : '#r-hp');
+    S.deaf.classList.toggle('on', !!deaf); S.deaf.setAttribute('aria-pressed', String(!!deaf)); S.deaf.st.textContent = deaf ? L.on : '';
+    S.deaf.querySelector('.fts-ic use').setAttribute('href', deaf ? '#r-hpoff' : '#r-hp');
+    S.deaf.querySelector('.fts-ic').style.setProperty('--ic', deaf ? '#FF453A' : '#636366');
     const scr = $id('btn-screen'), dk = $id('dk-screen');
+    const live = !!(scr && scr.classList.contains('live'));
     S.screen.hidden = !scr || !dk || dk.hidden || scr.classList.contains('off');
-    S.screen.classList.toggle('on', !!(scr && scr.classList.contains('live')));
-    const dot = $id('chat-dot'); S.chat.querySelector('.fts-dot').hidden = !dot || dot.hidden;
-    S.grab.classList.toggle('dot', !!dot && !dot.hidden && !S.open);
+    S.screen.st.textContent = live ? L.on : '';
+    const dot = $id('chat-dot'); const unread = !!dot && !dot.hidden;
+    S.chat.querySelector('.dk-dot').hidden = !unread;
+    S.grab.classList.toggle('dot', unread && !S.open);
   };
   const mo = new MutationObserver(mirror);
   for (const id of ['btn-mic', 'btn-deaf', 'sp-mic', 'sp-deaf', 'btn-screen', 'dk-screen', 'chat-dot']) { const n = $id(id); if (n) mo.observe(n, { attributes: true, attributeFilter: ['class', 'aria-pressed', 'hidden'] }); }
@@ -111,51 +131,74 @@ function buildSheet() {
   addEventListener('resize', measure);
   new MutationObserver(measure).observe(S.more, { attributes: true, subtree: true, attributeFilter: ['hidden'] });
 }
-function moreH() { return (S.more.offsetHeight || 0) + 10; }
+// altura escondida = tudo que fica abaixo da fileira principal
+function moreH() { return S.more ? S.more.offsetHeight : 0; }
 function measure() { if (S.el && S.el.classList.contains('live')) S.el.style.setProperty('--fts-mh', moreH() + 'px'); }
-function setSheet(open) {
-  S.open = !!open;
-  S.el.classList.toggle('open', S.open); S.scrim.classList.toggle('on', S.open);
-  S.el.style.removeProperty('--fts-y');
-  S.grab.setAttribute('aria-expanded', String(S.open)); S.more.setAttribute('aria-hidden', String(!S.open));
+// assentar com mola; a duração acompanha a distância e a velocidade (jogada rápida = assenta rápido)
+function settle(dist, v) {
+  const d = Math.max(.32, Math.min(.62, .38 + Math.abs(dist) / 1400 - Math.min(Math.abs(v || 0), 3) * .05));
+  for (const n of [S.el, S.scrim]) { n.style.setProperty('--fts-d', d + 's'); n.classList.add('settle'); }
+  clearTimeout(S.st); S.st = setTimeout(() => { S.el.classList.remove('settle'); S.scrim.classList.remove('settle'); }, d * 1000 + 60);
+}
+function setSheet(open, v) {
+  const was = S.open; S.open = !!open;
+  const h = moreH();
+  const from = S.el.style.getPropertyValue('--fts-y');
+  const y0 = from ? parseFloat(from) : (was ? 0 : h);
+  settle(Math.abs((S.open ? 0 : h) - y0), v);
+  S.el.style.removeProperty('--fts-y'); S.el.style.removeProperty('--fts-p'); S.scrim.style.removeProperty('--fts-p');
+  S.el.classList.toggle('open', S.open);
+  S.scrim.classList.toggle('on', S.open); S.scrim.style.setProperty('--fts-p', S.open ? '1' : '0');
+  S.grab.setAttribute('aria-expanded', String(S.open));
+  S.more.setAttribute('aria-hidden', String(!S.open)); S.more.inert = !S.open;
+  if (S.open) S.more.scrollTop = 0;
   S.mirror && S.mirror();
 }
-// arrastar: segue o dedo e, ao soltar, abre ou fecha conforme a posição e a velocidade
+// arrastar: a folha segue o dedo 1:1; passando das pontas, resiste (borracha); ao soltar, decide pela
+// posição projetada (onde ela pararia com o embalo) e assenta com mola
 function dragSheet() {
-  let y0 = 0, t0 = 0, base = 0, dy = 0, drag = false, id = null, lastY = 0, lastT = 0, v = 0;
+  let y0 = 0, base = 0, drag = false, id = null, samples = [], fromList = false;
   S.el.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
-    id = e.pointerId; y0 = lastY = e.clientY; t0 = lastT = performance.now(); drag = false; dy = 0; v = 0;
+    // dentro da lista aberta, arrastar rola a lista (a não ser que ela esteja no topo e o dedo desça)
+    fromList = S.open && S.more.contains(e.target);
+    id = e.pointerId; y0 = e.clientY; drag = false; samples = [[performance.now(), e.clientY]];
     base = S.open ? 0 : moreH();
   });
-  S.el.addEventListener('pointermove', (e) => {
+  // o gesto é acompanhado na janela toda: o dedo (ou o mouse) pode sair de cima da folha sem perder o arrasto
+  addEventListener('pointermove', (e) => {
     if (e.pointerId !== id) return;
     const d = e.clientY - y0;
-    if (!drag && Math.abs(d) > 7) { drag = true; S.el.classList.add('drag'); try { S.el.setPointerCapture(id); } catch { /* ok */ } }
-    if (!drag) return;
-    const now = performance.now(); v = (e.clientY - lastY) / Math.max(1, now - lastT); lastY = e.clientY; lastT = now;
+    if (!drag) {
+      if (Math.abs(d) < 6) return;
+      if (fromList && (d < 0 || S.more.scrollTop > 0)) { id = null; return; }
+      drag = true; S.el.classList.add('drag'); S.el.classList.remove('settle'); S.scrim.classList.remove('settle');
+      y0 = e.clientY; // sem pulo: começa de onde o dedo está
+    }
+    const now = performance.now(); samples.push([now, e.clientY]); while (samples.length > 5) samples.shift();
     const h = moreH();
-    let y = base + d;
-    if (y < 0) y = y / 3; // passa um pouco do topo e volta (borracha)
-    if (y > h) y = h + (y - h) / 3;
-    dy = d; S.el.style.setProperty('--fts-y', y + 'px');
-    S.scrim.style.setProperty('--fts-p', String(Math.max(0, Math.min(1, 1 - y / Math.max(1, h)))));
-    S.scrim.classList.add('drag');
+    let y = base + (e.clientY - y0);
+    if (y < 0) y = -Math.pow(-y, .7);            // borracha em cima
+    if (y > h) y = h + Math.pow(y - h, .7);       // borracha embaixo
+    const p = Math.max(0, Math.min(1, 1 - y / Math.max(1, h)));
+    S.el.style.setProperty('--fts-y', y.toFixed(1) + 'px');
+    S.el.style.setProperty('--fts-p', p.toFixed(3)); S.scrim.style.setProperty('--fts-p', p.toFixed(3));
+    S.scrim.classList.toggle('on', p > .02);
   });
   const end = (e) => {
     if (e.pointerId !== id) return;
     id = null;
-    S.scrim.classList.remove('drag'); S.scrim.style.removeProperty('--fts-p');
     if (!drag) return;
-    S.el.classList.remove('drag');
-    S.justDragged = true; setTimeout(() => { S.justDragged = false; }, 50);
-    const h = moreH(), y = base + dy;
-    const open = v < -0.35 ? true : v > 0.35 ? false : y < h / 2;
-    setSheet(open);
-    void t0;
+    drag = false; S.el.classList.remove('drag');
+    S.justDragged = true; setTimeout(() => { S.justDragged = false; }, 60);
+    const [t1, p1] = samples[0], [t2, p2] = samples[samples.length - 1];
+    const v = (p2 - p1) / Math.max(1, t2 - t1); // px/ms, + = para baixo
+    const h = moreH(), y = parseFloat(S.el.style.getPropertyValue('--fts-y')) || 0;
+    const projected = y + v * 180;
+    setSheet(projected < h / 2, v);
   };
-  S.el.addEventListener('pointerup', end);
-  S.el.addEventListener('pointercancel', end);
+  addEventListener('pointerup', end);
+  addEventListener('pointercancel', end);
 }
 
 function item(cls, ico, title, target) {

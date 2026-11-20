@@ -795,62 +795,72 @@ html .vid-card .ctl-btn.on, html.lite .vid-card .rib.glass.ctl-btn.on { backgrou
 .vid-card:focus { outline: none; }
 .vid-card.controlling:focus { outline: 2px solid #34C759; }
 
-/* ═══════════ ligação no celular: topo limpo + barra de baixo que arrasta para cima ═══════════
-   Topo: nome e tempo centralizados, direto sobre o fundo (como o FaceTime). Embaixo: Mudo, Áudio e Desligar grandes;
-   arrastando a barra para cima (ou tocando no puxador) aparecem as outras opções. */
+
+/* ═══════════ ligação no celular — como o FaceTime ═══════════
+   Fundo escuro e calmo (sem a foto espelhada), com só um brilho da cor da pessoa lá em cima.
+   No meio: foto, nome e tempo. Embaixo: uma folha com Áudio, Mudo e Desligar; arrastando para cima,
+   a lista do resto aparece em grupos, como o menu "mais" do FaceTime. */
+@property --fts-p { syntax: '<number>'; inherits: true; initial-value: 0; }
 .fts, .fts-scrim { display: none; }
 @media (max-width: 820px), (orientation: landscape) and (max-height: 520px) {
-  .room.ft-on .ft { background: none; box-shadow: none; padding: 0; margin: 0 auto; width: calc(100% - 140px); position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 70px; right: 70px; text-align: center; pointer-events: none; }
-  .room.ft-on .ft .rdock { display: none !important; }
-  .room.ft-on .ft-who { display: grid; justify-items: center; gap: 2px; padding: 0; }
-  .room.ft-on .ft-name { font-size: 20px; text-shadow: 0 1px 12px rgba(0,0,0,.35); max-width: 100%; }
-  .room.ft-on .ft-sub { font-size: 15px; justify-content: center; }
-  .view.room.ft-on { grid-template-rows: auto minmax(0, 1fr); }
-  .room.ft-on .call-scene { padding-bottom: 150px; }
-  .room.ft-on .ft-menu { display: none !important; }
+  .view.room.ft-on { background: #0B0B0D radial-gradient(120% 55% at 50% -8%, color-mix(in srgb, var(--ft-c, #6b5bd6) 42%, transparent), transparent 70%); }
+  .room.ft-on > .ft-bg, .room.ft-on .call-scene > .ft-bg { display: none !important; }
+  .room.ft-on .ft { display: none !important; }
+  .room.ft-on .call-scene { padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
+  .room.ft-on .call-scene .pp.her { width: clamp(124px, 19vh, 164px); height: clamp(124px, 19vh, 164px); }
+  .room.ft-on .call-scene .call-hero { display: flex !important; margin-top: 22px; }
+  .room.ft-on .call-scene .call-hero b { font-size: 30px; font-weight: 600; letter-spacing: -.02em; }
+  .room.ft-on .call-scene .call-hero span { font-size: 17px; color: #8E8E93; margin-top: 6px; }
+  .room.ft-on .pp.her.speaking { box-shadow: 0 0 0 4px #0B0B0D, 0 0 0 7px #34C759 !important; }
 
   .fts.live { display: block; position: absolute; z-index: 30; left: 0; right: 0; bottom: 0; color: #fff; touch-action: none; user-select: none; -webkit-user-select: none;
-    padding: 6px max(16px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-    border-radius: 30px 30px 0 0; background: rgba(28, 27, 31, .86); box-shadow: inset 0 .5px 0 rgba(255,255,255,.16), 0 -18px 50px rgba(0,0,0,.35);
-    -webkit-backdrop-filter: blur(30px) saturate(1.5); backdrop-filter: blur(30px) saturate(1.5);
-    /* fechada: as opções extras ficam abaixo da borda da tela */
-    transform: translateY(var(--fts-y, var(--fts-closed, 0px))); transition: transform .42s cubic-bezier(.32, .72, 0, 1); will-change: transform; }
-  html.lite .fts.live { background: #1C1B1F; }
-  .fts.live:not(.open) { --fts-closed: calc(var(--fts-mh, 0px)); }
-  .fts.live.drag { transition: none; }
-  .fts-grab { display: block; width: 100%; height: 22px; border: 0; padding: 0; margin: 0 0 2px; background: none; position: relative; cursor: grab; }
-  .fts-grab::before { content: ""; position: absolute; left: 50%; top: 8px; width: 38px; height: 5px; margin-left: -19px; border-radius: 3px; background: rgba(255,255,255,.32); transition: background .2s, width .2s; }
-  .fts.open .fts-grab::before { background: rgba(255,255,255,.5); }
-  .fts-grab.dot::after { content: ""; position: absolute; left: calc(50% + 26px); top: 5px; width: 9px; height: 9px; border-radius: 50%; background: #FF3B5C; }
+    max-height: calc(100% - env(safe-area-inset-top) - 24px); display: flex; flex-direction: column;
+    padding: 0 max(14px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    border-radius: 34px 34px 0 0; background: #1C1C1E; box-shadow: inset 0 .5px 0 rgba(255,255,255,.14), 0 -10px 40px rgba(0,0,0,.45);
+    transform: translate3d(0, var(--fts-y, 0px), 0); will-change: transform; }
+  .fts.live:not(.open):not(.drag) { --fts-y: var(--fts-mh, 0px); }
+  .fts.live.settle { transition: transform var(--fts-d, .5s) var(--spring), --fts-p var(--fts-d, .5s) var(--ease-out); }
+  .fts.live { --fts-p: 0; }
+  .fts.live.open { --fts-p: 1; }
 
-  .fts-main { display: grid; grid-template-columns: repeat(3, 1fr); justify-items: center; padding: 2px 6px 6px; }
-  .fts-b, .fts-t { display: grid; justify-items: center; gap: 7px; border: 0; padding: 0; background: none; color: inherit; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-  .fts-c { position: relative; display: grid; place-items: center; border-radius: 50%; transition: transform .14s cubic-bezier(.32,.72,0,1), background .2s, color .2s; }
-  .fts-b .fts-c { width: 66px; height: 66px; background: rgba(255,255,255,.14); }
-  .fts-b .i { width: 28px; height: 28px; }
-  .fts-b:active .fts-c, .fts-t:active .fts-c { transform: scale(.9); }
-  .fts-l { font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.78); letter-spacing: .01em; }
-  .fts-b.on .fts-c { background: #fff; color: #111; }          /* mudo ligado: igual ao FaceTime */
-  .fts-b.k-end .fts-c { background: #EB5545; }
-  .fts-b.k-end .i { width: 32px; height: 32px; }
+  .fts-grab { flex: none; display: block; width: 100%; height: 24px; border: 0; padding: 0; background: none; position: relative; cursor: grab; }
+  .fts-grab::before { content: ""; position: absolute; left: 50%; top: 9px; width: 36px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.3);
+    transform: translateX(-50%) scaleX(calc(1 + var(--fts-p) * .25)); }
+  .fts-grab.dot::after { content: ""; position: absolute; left: calc(50% + 28px); top: 6px; width: 9px; height: 9px; border-radius: 50%; background: #FF453A; }
 
-  .fts-more { display: grid; grid-template-columns: repeat(4, 1fr); row-gap: 18px; padding: 18px 2px 4px; margin-top: 10px; border-top: .5px solid rgba(255,255,255,.12);
-    opacity: 0; transition: opacity .3s; }
-  .fts.open .fts-more, .fts.drag .fts-more { opacity: 1; }
-  .fts-t .fts-c { width: 54px; height: 54px; background: rgba(255,255,255,.1); }
-  .fts-t .i { width: 24px; height: 24px; }
-  .fts-t .fts-l { font-size: 11.5px; font-weight: 550; color: rgba(255,255,255,.7); }
-  .fts-t.on .fts-c { background: #fff; color: #111; }
-  .fts-t[hidden] { display: none; }
-  .fts-dot { top: 2px; right: 2px; }
+  /* os três de sempre: colunas iguais, círculos do mesmo tamanho, rótulo embaixo */
+  .fts-main { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px 8px 6px; }
+  .fts-b { display: grid; justify-items: center; gap: 8px; border: 0; padding: 0; background: none; color: inherit; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .fts-c { position: relative; display: grid; place-items: center; border-radius: 50%; transition: transform var(--m-tap) var(--ease-out), background-color var(--m-fast), color var(--m-fast); }
+  .fts-b .fts-c { width: 64px; height: 64px; background: #3A3A3C; }
+  .fts-b .fts-c svg { width: 28px !important; height: 28px !important; }
+  .fts-b:active .fts-c { transform: scale(.92); }
+  .fts-l { font-size: 12.5px; font-weight: 500; color: #EBEBF5; opacity: .75; }
+  .fts-b.on .fts-c { background: #fff; color: #000; }
+  .fts-b.k-end .fts-c { background: #FF3B30; }
+  .fts-b.k-end .fts-c svg { width: 32px !important; height: 32px !important; }
 
-  .fts-scrim { display: block; position: absolute; inset: 0; z-index: 29; background: #000; opacity: 0; pointer-events: none; transition: opacity .35s; }
-  .fts-scrim.on { opacity: .35; pointer-events: auto; }
-  .fts-scrim.drag { transition: none; opacity: calc(var(--fts-p, 0) * .35); }
-  /* com a folha de áudio ou de efeitos aberta, a barra fica por baixo */
+  /* o resto: lista em grupos (como o menu do FaceTime). Aparece junto com o arrastar: cada linha chega
+     um tiquinho depois da anterior (só na abertura; arrastando, segue o dedo). */
+  .fts-more { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 2px 4px; display: grid; gap: 14px; align-content: start; }
+  .fts-grp { display: grid; border-radius: 20px; background: #2C2C2E; overflow: hidden; }
+  .fts-r { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; column-gap: 14px; min-height: 60px; padding: 8px 16px 8px 12px; border: 0; background: none; color: #fff; font: inherit; text-align: left; cursor: pointer; position: relative;
+    opacity: var(--fts-p); transform: translate3d(0, calc((1 - var(--fts-p)) * (10px + var(--i, 0) * 6px)), 0); -webkit-tap-highlight-color: transparent; }
+  .fts-r + .fts-r::before { content: ""; position: absolute; top: 0; left: 66px; right: 0; height: .5px; background: rgba(84,84,88,.6); }
+  .fts-r:active { background: rgba(255,255,255,.06); }
+  .fts-r[hidden] { display: none; }
+  .fts-ic { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ic, #636366); color: #fff; }
+  .fts-ic svg { width: 21px !important; height: 21px !important; }
+  .fts-tx { display: grid; gap: 1px; min-width: 0; }
+  .fts-tx b { font-size: 16.5px; font-weight: 500; letter-spacing: -.01em; }
+  .fts-tx small { font-size: 13.5px; color: #8E8E93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fts-st { font-size: 14px; color: #8E8E93; }
+  .fts-r.on .fts-st { color: #fff; }
+  .fts-r .dk-dot { position: static; width: 9px; height: 9px; }
+
+  .fts-scrim { display: block; position: absolute; inset: 0; z-index: 29; background: #000; opacity: calc(var(--fts-p) * .45); pointer-events: none; }
+  .fts-scrim.on { pointer-events: auto; }
+  .fts-scrim.settle { transition: --fts-p var(--fts-d, .5s) var(--ease-out); }
   .room.ft-on .rpop:not([hidden]) ~ .fts, .room.ft-on .room-chat:not([hidden]) ~ .fts { visibility: hidden; }
 }
-@media (prefers-reduced-motion: reduce) { .fts.live { transition-duration: .01s; } }
-@media (max-width: 820px), (orientation: landscape) and (max-height: 520px) {
-  .room.ft-on .ft-name, .room.ft-on .ft-sub { width: 100%; text-align: center; justify-content: center; }
-}
+@media (prefers-reduced-motion: reduce) { .fts.live.settle, .fts-scrim.settle { transition-duration: .01s !important; } }
