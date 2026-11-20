@@ -1,4 +1,4 @@
-# Ferramenta: roda a mesma montagem do app e guarda o registro completo numa branch (para achar erros).
+# Ferramenta: compila o programa auxiliar e guarda o registro numa branch (para achar erros).
 name: Diagnostico do app
 on:
   push:
@@ -10,23 +10,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
+        os: [macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Montar com registro
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+      - name: Compilar com registro
         shell: bash
-        working-directory: desktop
         run: |
           set +e
           L="$GITHUB_WORKSPACE/log-${{ runner.os }}.txt"
-          { echo "== node $(node -v) npm $(npm -v)"; npm install --no-audit --no-fund 2>&1; echo "== exit install $?";
-            if [ "$RUNNER_OS" = macOS ]; then
-              for a in arm64 x64; do for i in 1 2 3; do hdiutil detach /Volumes/Echo -force >/dev/null 2>&1; CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --mac --$a --publish never 2>&1 && { echo "== ok $a"; break; }; echo "== falhou $a $i"; sleep 10; done; done
-            else CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --win --publish never 2>&1; echo "== exit build $?"; fi
-            ls -la dist 2>&1; } > "$L"
+          { bash desktop/helper/build.sh 2>&1; echo "== exit helper $?"; } > "$L"
+          if [ "$RUNNER_OS" = macOS ]; then { printf 'ping\nlist\nquit\n' | desktop/helper/bin/echo-helper | strings; } >> "$L" 2>&1; fi
+          if [ "$RUNNER_OS" = Windows ]; then { printf 'ping\nlist\nquit\n' | desktop/helper/bin/echo-helper.exe | strings; } >> "$L" 2>&1; fi
           exit 0
       - name: Guardar registro
         shell: bash
