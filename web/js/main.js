@@ -160,6 +160,10 @@ async function boot() {
   const safari = /Safari/.test(ua) && /Apple/.test(navigator.vendor || '') && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|Instagram|FBAN|FBAV|Line\//.test(ua);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   if (!(safari || (standalone && /iPhone|iPad/.test(ua) && !/CriOS|GSA\//.test(ua)))) document.documentElement.classList.add('lite');
+  // barra de título: no app instalado e no app para computador, o Echo ocupa o lugar dela (sobra só uma faixa para arrastar)
+  const wco = navigator.windowControlsOverlay;
+  const syncWco = () => document.documentElement.classList.toggle('wco', !!(wco && wco.visible) || / Electron\//.test(ua));
+  syncWco(); if (wco) wco.addEventListener('geometrychange', syncWco);
   initPwa();
   applyTheme(CFG.theme);
   applyI18n();

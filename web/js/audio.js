@@ -85,6 +85,23 @@ async function ensureDtln(ac) {
   } catch (e) { console.warn('dtln', e); dtlnP = null; return false; }
 }
 
+// DeepFilterNet3: a rede mais forte (48 kHz, voz inteira, tira ventilador, teclado, rua e eco de sala).
+// Só no computador (no celular pesa demais): wasm + modelo (~9 MB) baixados uma vez e guardados pelo app.
+// Roda num Worker (dfn3-worker.js) pelo mesmo worklet do DTLN. Se não carregar ou ficar lento, cai para o DTLN.
+let dfnBin = null, dfnP = null, dfnSlow = false;
+async function ensureDfn3(ac) {
+  if (!ac || ac.sampleRate !== 48000 || dfnSlow || isTouch() || typeof Worker === 'undefined' || typeof WebAssembly === 'undefined') return false;
+  try {
+    if (!dfnBin) {
+      const get = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u + ' ' + r.status); return r.arrayBuffer(); });
+      dfnP = dfnP || Promise.all([get('/js/vendor/dfn3/df_bg.wasm'), get('/js/vendor/dfn3/model.bin')]).then(([wasm, model]) => (dfnBin = { wasm, model }));
+      await dfnP;
+    }
+    if (!dtlnLoaded.has(ac)) { await ac.audioWorklet.addModule('/js/dtln-worklet.js'); dtlnLoaded.add(ac); }
+    return true;
+  } catch (e) { console.warn('dfn3', e); dfnP = null; return false; }
+}
+
 let rnnBytes = null;
 const rnnLoaded = new WeakSet();
 async function ensureRnnoise(ac) {
@@ -106,12 +123,15 @@ export async function openMic(ac) {
   let useChain = !!ac && ac.state === 'running' && chainWanted();
   const audioC = micConstraints();
   // RNNoise no lugar do filtro do navegador; se não carregar, fica o do navegador (como no modo leve)
-  const dtln = useChain && (await ensureDtln(ac));
+  const dfn = useChain && (await ensureDfn3(ac));
+  const dtln = useChain && !dfn && (await ensureDtln(ac));
   // a RNNoise piorava a voz nos testes: sem DTLN, fica o filtro do próprio navegador
   const rnn = false;
-  if (useChain && !dtln && !rnn) { useChain = false; audioC.voiceIsolation = true; }
-  const ownDn = useChain && !dtln && denoiseLevel() > 0 && (await ensureDenoise(ac));
-  if (dtln || rnn) { audioC.noiseSuppression = false; audioC.autoGainControl = false; delete audioC.voiceIsolation; }
+  if (useChain && !dfn && !dtln && !rnn) { useChain = false; audioC.voiceIsolation = true; }
+  const ownDn = useChain && !dfn && !dtln && denoiseLevel() > 0 && (await ensureDenoise(ac));
+  // com a nossa rede: o filtro do navegador fica LIGADO (tira o ruído constante, tipo ventilador, antes dela), mas o
+  // ganho automático fica desligado (era ele que "bombeava" o ruído e atrapalhava a rede)
+  if (dfn || dtln || rnn) { audioC.noiseSuppression = true; audioC.autoGainControl = false; delete audioC.voiceIsolation; }
   const raw = await navigator.mediaDevices.getUserMedia({ audio: audioC });
   const stopRaw = () => raw.getTracks().forEach((t) => t.stop());
   if (!useChain) {
@@ -136,6 +156,26 @@ export async function openMic(ac) {
     const link = (n) => { last.connect(n); nodes.push(n); last = n; };
     const strong = NS() === 'strong';
     const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 90; f.Q.value = 0.7; link(f);
+    if (dfn) {
+      try {
+        const d = new AudioWorkletNode(ac, 'echo-dtln', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });
+        const wk = new Worker('/js/dfn3-worker.js', { type: 'module' });
+        const mc = new MessageChannel();
+        const wasm = dfnBin.wasm.slice(0), model = dfnBin.model.slice(0);
+        wk.postMessage({ port: mc.port1, wasm, model, atten: strong ? 100 : 45, post: strong }, [mc.port1, wasm, model]);
+        d.port.postMessage({ port: mc.port2 }, [mc.port2]);
+        const slow = () => {
+          if (dfnSlow) return;
+          dfnSlow = true; console.warn('DeepFilterNet3 lento neste aparelho: usando o DTLN');
+          onBroken && onBroken();   // reabre o microfone; desta vez sem a DFN3
+        };
+        wk.onmessage = (e) => { if (e.data && e.data.slow) slow(); if (e.data && e.data.err) { console.warn('dfn3', e.data.err); slow(); } };
+        wk.onerror = (e) => { console.warn('dfn3 worker', e.message || e); slow(); };
+        d.port.onmessage = (e) => { if (e.data && e.data.slow) slow(); };
+        link(d);
+        nodes.push({ disconnect: () => wk.terminate() });
+      } catch (e) { console.warn('dfn3 node', e); }
+    }
     if (dtln) {
       try {
         const d = new AudioWorkletNode(ac, 'echo-dtln', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });

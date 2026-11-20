@@ -1,0 +1,4 @@
+DeepFilterNet3 (supressão de ruído do Echo no computador)
+- df.js e df_bg.wasm: compilados com wasm-pack a partir de github.com/Rikorose/DeepFilterNet (libDF, feature "wasm").
+- model.bin: models/DeepFilterNet3_onnx.tar.gz do mesmo repositório (só renomeado).
+Licença: MIT ou Apache-2.0 (LICENSE-MIT, LICENSE-APACHE). Autor: Hendrik Schröter.

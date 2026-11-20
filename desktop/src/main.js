@@ -20,6 +20,10 @@ function createWindow() {
     width: 1240, height: 820, minWidth: 900, minHeight: 600,
     backgroundColor: '#0E0E10', title: 'Echo', show: false,
     icon: path.join(__dirname, '..', 'build', 'icon.png'),
+    // sem barra de título do sistema: o Echo desenha uma faixa escura para arrastar; os botões da janela continuam
+    autoHideMenuBar: true,
+    titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
+    titleBarOverlay: isMac ? true : { color: '#0E0E10', symbolColor: '#FFFFFF', height: 32 },
     webPreferences: { contextIsolation: true, sandbox: true, spellcheck: true, backgroundThrottling: false },
   });
   win.once('ready-to-show', () => win.show());

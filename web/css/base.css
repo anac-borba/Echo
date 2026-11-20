@@ -253,3 +253,15 @@ html, body { touch-action: manipulation; -webkit-text-size-adjust: 100%; text-si
 /* modo leve (navegadores de terceiros no iPhone): sem desfoque de fundo e sem animações infinitas de enfeite */
 .lite *, .lite *::before, .lite *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 .lite .ga-boom, .lite .gt-fall, .lite .nv-grid::before { animation: none !important; }
+
+/* Sem a barrinha de digitar em cima dos textos (aparece com a "navegação por cursor" do Chrome, tecla F7):
+   o cursor só existe onde se digita de verdade. */
+html { caret-color: transparent; }
+input, textarea, select, [contenteditable="true"], [contenteditable=""], [contenteditable="plaintext-only"] { caret-color: auto; }
+
+/* App instalado (Chrome/Edge) e app para computador: o Echo ocupa a barra de título.
+   Fica só uma faixa vazia para arrastar a janela; os botões de fechar/minimizar continuam do sistema. */
+html.wco { background: var(--bg); }
+html.wco .app, html.wco .auth, html.wco #auth { top: env(titlebar-area-height, 32px) !important; height: auto !important; bottom: 0 !important; }
+html.wco::before { content: ""; position: fixed; z-index: 2147483000; top: env(titlebar-area-y, 0); left: env(titlebar-area-x, 0); width: env(titlebar-area-width, 100%); height: env(titlebar-area-height, 32px);
+  -webkit-app-region: drag; app-region: drag; background: var(--bg); }
