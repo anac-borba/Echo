@@ -782,3 +782,15 @@ input.mx-tg:checked::after { transform: translateX(16px); }
   /* a conversa ao lado: sem sombra, só uma linha */
   .room.ft-on .room-chat { background: #0E0E10; border-left: 1px solid #1F1F22; box-shadow: none; }
 }
+
+/* ===== controle remoto ===== */
+.ctl-btn { width: auto !important; padding: 0 14px 0 12px !important; gap: 8px; display: inline-flex; align-items: center; font: 600 13px/1 var(--font); }
+html .vid-card .ctl-btn.on, html.lite .vid-card .rib.glass.ctl-btn.on { background: #fff !important; color: #111 !important; }
+.ctl-badge { position: absolute; z-index: 6; left: 50%; top: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 22px; background: #000; color: #fff; font-size: 14px; white-space: nowrap; }
+.ctl-badge[hidden] { display: none; }
+.ctl-badge .rdot { width: 8px; height: 8px; border-radius: 4px; background: #34C759; }
+.ctl-badge button { height: 30px; padding: 0 14px; border: 0; border-radius: 15px; background: #FF3B30; color: #fff; font: 600 13px/1 var(--font); cursor: pointer; }
+.vid-card.controlling { cursor: crosshair; outline: 2px solid #34C759; outline-offset: -2px; }
+.vid-card.controlling video { cursor: crosshair; }
+.vid-card:focus { outline: none; }
+.vid-card.controlling:focus { outline: 2px solid #34C759; }

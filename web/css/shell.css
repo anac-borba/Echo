@@ -1016,3 +1016,18 @@ html, body { min-height: var(--app-h, 100%); }
 .ce-col { width: min(420px, 100%); display: flex; flex-direction: column; gap: 10px; }
 .ce-col .ce-b { width: 100%; height: 52px; border-radius: 26px; }
 @media (prefers-reduced-motion: reduce) { .ce { transition: none; } }
+
+/* ===== sem repetição: conversas na coluna ao lado (computador), boas-vindas no meio ===== */
+.side-h:not(.link) { display: flex; align-items: center; gap: 6px; }
+.side-h:not(.link) > span:first-child { flex: 1; }
+.side-ib { min-width: 28px; height: 28px; padding: 0 6px; border: 0; border-radius: 14px; background: none; color: var(--mut); display: inline-grid; place-items: center; cursor: pointer; }
+.side-ib:hover { background: var(--fill, rgba(255,255,255,.07)); color: var(--text); }
+.side-ib .ico { width: 16px; height: 16px; }
+.side-ib .count { position: static; }
+.hm-welcome { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 40px 20px 80px; }
+.hm-welcome .mascot-box { width: 120px; height: 120px; margin-bottom: 10px; }
+.hm-welcome > b { font-size: 28px; font-weight: 600; letter-spacing: -.02em; }
+.hm-welcome .d { color: var(--mut); font-size: 15px; }
+.hm-wb { display: flex; gap: 10px; margin-top: 14px; align-items: center; }
+#view-home .view-body:has(.hm-welcome) { display: flex; }
+#view-home .view-body:has(.hm-welcome) > .page { flex: 1; max-width: none; }

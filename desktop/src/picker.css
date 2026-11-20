@@ -32,3 +32,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .b.sec { background: #2A2A2E; }
 .b.main { background: #fff; color: #111; font-weight: 600; }
 .b:disabled { opacity: .4; cursor: default; }
+
+.pk-r { min-height: 0; }
+.apps { list-style: none; margin: 4px 0 0; padding: 0; border-radius: 12px; background: #1E1E22; overflow-y: auto; max-height: 360px; }
+.apps li { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-bottom: 1px solid #2A2A2E; }
+.apps li:last-child { border-bottom: 0; }
+.apps .ai { width: 26px; height: 26px; border-radius: 7px; flex: none; background: #2C2C30 center / contain no-repeat; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #A1A1A6; }
+.apps .an { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.apps .an b { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apps .an small { color: #8E8E93; font-size: 12px; }
+.apps .echo .ai { background: #24202E; color: #9D90FF; }
+.apps:empty { display: none; }
+.pk-r[data-off] .apps, .pk-r[data-off] #audio-d { opacity: .4; pointer-events: none; }

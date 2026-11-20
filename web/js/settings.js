@@ -12,6 +12,7 @@ import { confirmBox } from './modal.js';
 import { bioMethod, platformId, loadPasskey, lastUser, saveLast } from './auth.js';
 import { isStandalone, canPrompt, promptInstall, manualHelp, onInstallChange } from './pwa.js';
 import { notifySupported, notifyState, enableNotify, disableNotify, isIOS } from './notify.js';
+import { app as desk } from './desktop.js';
 
 const root = () => $('#settings');
 let current = null;
@@ -472,11 +473,75 @@ function pageNotify() {
   return [box];
 }
 
+/* ───────────── atualizações e Echo para computador ───────────── */
+addDict('pt', {
+  'set.update': 'Atualizações', 'upd.site': 'Echo', 'upd.site.d': 'Busca a versão mais nova do Echo agora e recarrega.',
+  'upd.force': 'Procurar atualização', 'upd.forcing': 'Atualizando…', 'upd.app': 'Echo para computador', 'upd.ver': 'Versão {v}',
+  'upd.check': 'Procurar atualização', 'upd.checking': 'Procurando…', 'upd.none': 'Você está na versão mais nova.', 'upd.dl': 'Baixando a versão {v}… {p}%',
+  'upd.ready': 'A versão {v} está pronta.', 'upd.restart': 'Reiniciar e atualizar', 'upd.err': 'Não deu para atualizar: {e}',
+  'desk.title': 'No computador', 'desk.ctl': 'Deixar pedirem controle', 'desk.ctl.d': 'Quem assiste a sua tela pode pedir para usar o mouse e o teclado. Cada pedido abre uma janela para você permitir.',
+  'desk.login': 'Abrir ao ligar o computador', 'desk.key': 'Atalho para parar o controle', 'desk.get': 'Baixar o Echo para computador', 'desk.get.d': 'Som de cada app na transmissão e controle remoto.',
+});
+addDict('en', {
+  'set.update': 'Updates', 'upd.site': 'Echo', 'upd.site.d': 'Fetches the newest Echo now and reloads.',
+  'upd.force': 'Check for updates', 'upd.forcing': 'Updating…', 'upd.app': 'Echo for desktop', 'upd.ver': 'Version {v}',
+  'upd.check': 'Check for updates', 'upd.checking': 'Checking…', 'upd.none': 'You have the newest version.', 'upd.dl': 'Downloading version {v}… {p}%',
+  'upd.ready': 'Version {v} is ready.', 'upd.restart': 'Restart and update', 'upd.err': "Couldn't update: {e}",
+  'desk.title': 'On this computer', 'desk.ctl': 'Allow control requests', 'desk.ctl.d': 'People watching your screen can ask to use your mouse and keyboard. Each request opens a window for you to allow.',
+  'desk.login': 'Open at login', 'desk.key': 'Shortcut to stop control', 'desk.get': 'Get Echo for desktop', 'desk.get.d': 'Per-app sound when sharing and remote control.',
+});
+/** Força a versão nova do site: pergunta ao service worker, apaga o que está guardado e recarrega. */
+export async function forceSiteUpdate() {
+  try {
+    const reg = navigator.serviceWorker && (await navigator.serviceWorker.getRegistration());
+    if (reg) { await reg.update().catch(() => {}); if (reg.waiting) reg.waiting.postMessage({ type: 'skip-waiting' }); }
+    if (window.caches) for (const k of await caches.keys()) await caches.delete(k);
+  } catch { /* segue para recarregar */ }
+  location.reload();
+}
+let updUnsub = false;
+function pageUpdate() {
+  const out = [];
+  const siteBtn = el('button', { class: 'btn sm', type: 'button', onClick: () => { siteBtn.disabled = true; siteBtn.textContent = t('upd.forcing'); forceSiteUpdate(); } }, t('upd.force'));
+  out.push(group(t('set.update'), null, row(t('upd.site'), t('upd.site.d'), siteBtn)));
+  if (desk) {
+    const status = el('small', { text: '' });
+    const act = el('button', { class: 'btn sm', type: 'button' }, t('upd.check'));
+    const title = el('span', { class: 'sr-t', text: t('upd.app') });
+    const show = (s) => {
+      if (!s) return;
+      if (s.version) title.textContent = t('upd.app') + ' · ' + t('upd.ver', { v: s.version });
+      const st = s.state;
+      status.textContent = st === 'checking' ? t('upd.checking') : st === 'none' ? t('upd.none') : st === 'downloading' ? t('upd.dl', { v: s.next || '', p: s.progress || 0 }) : st === 'ready' ? t('upd.ready', { v: s.next || '' }) : st === 'error' ? t('upd.err', { e: s.error || '' }) : '';
+      act.textContent = st === 'ready' ? t('upd.restart') : t('upd.check');
+      act.disabled = st === 'checking' || st === 'downloading';
+      act.onclick = () => (st === 'ready' ? desk.installUpdate() : desk.checkUpdate().then(show));
+    };
+    if (!updUnsub) { updUnsub = true; desk.onUpdate((s) => { if (current === 'update') show(s); }); }
+    desk.info().then((i) => i && show({ version: i.version, state: 'idle' }));
+    desk.checkUpdate().then(show);
+    out.push(group(null, null, el('div', { class: 'sr' }, el('span', { class: 'sr-l' }, title, status), el('span', { class: 'sr-c' }, act))));
+    const box = el('div', {});
+    desk.getSettings().then((s) => {
+      if (!s) return;
+      box.replaceChildren(group(t('desk.title'), null,
+        switchRow(t('desk.ctl'), t('desk.ctl.d'), s.controlAllowed, (v) => desk.setSetting('controlAllowed', v)),
+        switchRow(t('desk.login'), null, s.openAtLogin, (v) => desk.setSetting('openAtLogin', v)),
+        row(t('desk.key'), null, el('span', { class: 'sr-val', text: 'Ctrl+Alt+Esc' }))));
+    });
+    out.push(box);
+  } else if (!isCompact()) {
+    out.push(group(null, null, row(t('desk.get'), t('desk.get.d'), el('a', { class: 'btn sm', href: 'https://github.com/anac-borba/echo/releases/latest', target: '_blank', rel: 'noopener' }, t('desk.get')))));
+  }
+  return out;
+}
+
 /* ───────────── abrir / fechar ───────────── */
 const PAGES = [
   ['account', 'i-user', 'set.account', pageAccount], ['profile', 'i-pen', 'set.profile', pageProfile],
   ['voice', 'i-mic', 'set.voice', pageVoice], ['stream', 'i-screen', 'set.stream', pageStream], ['notify', 'i-bell', 'set.notify', pageNotify],
   ['appearance', 'i-palette', 'set.appearance', pageAppearance], ['language', 'i-globe', 'set.language', pageLanguage],
+  ['update', 'i-download', 'set.update', pageUpdate],
 ];
 
 /** Redesenha a página atual (ex.: depois de trocar o idioma), sem animação. */

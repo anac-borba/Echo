@@ -1,5 +1,6 @@
 'use strict';
 // Ponto de partida: decide entre a tela de entrar e o aplicativo, e cuida dos eventos ao vivo.
+import { initRemote } from './remote.js';
 import { $, $$, el, toast, store, setIcon } from './util.js';
 import { D, CFG, ingest, userById, emit, on, remember } from './state.js';
 import { api, prehash, Events } from './api.js';
@@ -77,7 +78,7 @@ async function enterApp(user) {
   try { await Promise.all([refreshFriends(), refreshServers(), loadConvs()]); } catch (e) { console.warn(e); }
   ingest();
   if (!shellReady) {
-    initShell(ev); setSettingsOpener(openSettings); initRinger((o) => events && events.send(o)); initCall(ev); initActivities(); initRoomExtras();
+    initShell(ev); setSettingsOpener(openSettings); initRinger((o) => events && events.send(o)); initCall(ev); initRemote(); initActivities(); initRoomExtras();
     on('me', () => renderAll()); on('users', () => {});
     on('logout', doLogout); on('devices', onDevicesChanged);
     on('switch-account', switchAccount); on('add-account', addAccount);

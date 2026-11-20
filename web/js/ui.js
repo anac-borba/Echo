@@ -196,9 +196,8 @@ function renderRail() {
     badge ? el('span', { class: 'dot-badge', text: badge }) : null);
   r.append(el('div', { class: 'rail-item' }, el('button', { class: 'rail-btn logo', type: 'button', title: 'Echo', 'aria-label': t('nav.home'), onClick: () => go('home') }, el('img', { src: '/logo.svg', alt: '' }))));
   r.append(el('div', { class: 'rail-sep' }));
-  r.append(navBtn('home', 'i-home', t('nav.home'), v === 'home'));
-  r.append(navBtn('friends', 'i-users', t('nav.friends'), v === 'friends', inc));
-  r.append(navBtn('calls', 't-calls', t('nav.calls'), v === 'calls'));
+  // sem abas repetidas: as conversas (com amigos e ligações) ficam na coluna ao lado; amigos e pedidos pelo "+"
+  r.append(navBtn('home', 'i-home', t('nav.home'), v === 'home' || v === 'friends' || v === 'calls', inc));
   r.append(navBtn('games', 't-games', t('nav.games'), v === 'games', pendingInvites()));
 }
 
@@ -206,7 +205,8 @@ function renderRail() {
 function sideFriend(f) {
   const room = dmRoom(D.me.id, f.id);
   const inCallWith = currentRoom() === room;
-  const sub = (inCallWith || f.inRoom) ? t('status.incall') : f.online === false ? t('status.offline') : (f.statusText || statusText(f));
+  const last = lastOf(f.id);
+  const sub = (inCallWith || f.inRoom) ? t('status.incall') : last ? (last.author === D.me.id && last.kind !== 'call' ? t('you') + ': ' : '') + preview(last) : (f.statusText || statusText(f));
   const n = unreadOf(f.id);
   const open = D.view.name === 'dm' && D.view.id === f.id;
   const typing = isTyping(f.id);
@@ -233,10 +233,13 @@ function renderSide() {
   const b = els.sideBody; b.replaceChildren();
   const v = D.view;
   const curSrv = v.name === 'server' ? v.id : (v.name === 'room' && channelInfo(currentRoom()) ? channelInfo(currentRoom()).server.id : null);
-  const head = (label, view, count) => el('button', { class: 'side-h link', type: 'button', onClick: () => go(view) }, el('span', { text: label }), count ? el('span', { class: 'count', text: count }) : icon('i-chev-right'));
-  b.append(head(t('side.friends'), 'friends', D.incoming.length));
+  // a lista de conversas mora aqui (no computador); "+" adiciona amigo, o número mostra pedidos de amizade
+  const inc = D.incoming.length;
+  b.append(el('div', { class: 'side-h' }, el('span', { text: t('side.convs') }),
+    inc ? el('button', { class: 'side-ib', type: 'button', title: t('home.reqs'), 'aria-label': t('home.reqs'), onClick: () => { friendsTab = 'pending'; go('friends'); } }, el('span', { class: 'count', text: inc })) : null,
+    el('button', { class: 'side-ib', type: 'button', title: t('friends.add'), 'aria-label': t('friends.add'), onClick: () => { friendsTab = 'add'; go('friends'); } }, icon('i-plus'))));
   if (!D.friends.length) b.append(el('p', { class: 'side-empty', text: t('side.nofriends') }));
-  [...D.friends].sort((a, c) => (c.online ? 1 : 0) - (a.online ? 1 : 0)).forEach((f) => b.append(sideFriend(f)));
+  [...D.friends].sort((a, c) => (isRinging(c.id) - isRinging(a.id)) || (((lastOf(c.id) || {}).at || 0) - ((lastOf(a.id) || {}).at || 0)) || ((c.online ? 1 : 0) - (a.online ? 1 : 0))).forEach((f) => b.append(sideFriend(f)));
 
 }
 
@@ -296,7 +299,7 @@ function renderTabbar() {
     const tab = (name, ic, label) => el('button', { type: 'button', dataset: { v: name }, 'aria-label': label, title: label, onClick: () => { if (D.view.name === name) scrollTopView(); else go(name); } },
       el('span', { class: 'tab-ic' }, ic ? icon(ic, 'ico t-o') : null, ic ? icon(ic + '-f', 'ico t-f') : el('span', { class: 'tab-me' })),
       el('span', { class: 'tab-l', text: label }));
-    tb.replaceChildren(tab('home', 't-home', t('nav.home')), tab('calls', 't-calls', t('nav.calls')), tab('games', 't-games', t('nav.games')), tab('profile', null, t('nav.profile')));
+    tb.replaceChildren(tab('home', 't-home', t('nav.home')), tab('games', 't-games', t('nav.games')), tab('profile', null, t('nav.profile')));
   }
   // aba Perfil: a sua foto
   const meSlot = tb.querySelector('.tab-me');
@@ -352,6 +355,15 @@ function renderHome() {
     el('label', { class: 'hm-search' }, icon('i-search', 'ico hm-sic'), search),
     reqN ? el('button', { class: 'hm-ib', type: 'button', title: t('home.reqs'), 'aria-label': t('home.reqs'), onClick: () => { friendsTab = 'pending'; go('friends'); } }, icon('i-inbox'), el('span', { class: 'badge-n', text: String(reqN) })) : null,
     el('button', { class: 'hm-ib', type: 'button', title: t('friends.add'), 'aria-label': t('friends.add'), onClick: () => { friendsTab = 'add'; go('friends'); } }, icon('i-plus')));
+  if (D.friends.length && !isCompact()) {
+    // computador: a lista de conversas já está na coluna ao lado; aqui só as boas-vindas, sem repetir
+    const top = els.vHome.querySelector('.topbar'); if (top) top.hidden = true;
+    v.append(el('div', { class: 'hm-welcome' }, homeMascot, el('b', { text: t('hi.hello', { name: displayName(D.me).split(' ')[0] }) }), el('span', { class: 'd', text: t('home.pick') }),
+      el('div', { class: 'hm-wb' },
+        el('button', { class: 'primary-w', type: 'button', onClick: () => { friendsTab = 'add'; go('friends'); } }, t('home.addFriend')),
+        D.incoming.length ? el('button', { class: 'text-b', type: 'button', onClick: () => { friendsTab = 'pending'; go('friends'); } }, t('home.reqs') + ' (' + D.incoming.length + ')') : null)));
+    return;
+  }
   if (!D.friends.length) {
     // vazio: o morceguinho, o que é esta tela e a saída
     v.append(el('div', { class: 'hm-empty' }, homeMascot, el('b', { text: t('home.empty.t') }), el('span', { class: 'd', text: t('home.empty.d') }),

@@ -30,7 +30,7 @@ const pt = {
   'pwa.mac': 'No Safari do Mac, use Arquivo > Adicionar ao Dock.', 'pwa.other': 'No menu do navegador, procure Instalar app ou Adicionar à tela inicial.', 'pwa.installed': 'O Echo já está instalado neste aparelho.',
   'nav.chat': 'Conversas', 'conn.ok.short': 'Conectado', 'conn.off.short': 'Sem conexão',
   'chip.secure': 'Cifrada', 'chip.direct': 'Direto', 'page.home.sub': 'Seu espaço de ligações e transmissões.',
-  'side.friends': 'Amigos', 'side.servers': 'Servidores', 'side.nofriends': 'Nenhum amigo ainda.',
+  'side.friends': 'Amigos', 'side.convs': 'Conversas', 'home.pick': 'Escolha alguém ao lado para conversar ou ligar.', 'side.servers': 'Servidores', 'side.nofriends': 'Nenhum amigo ainda.',
   'mic.menu': 'Opções do microfone', 'mic.mute': 'Silenciar microfone', 'mic.unmute': 'Ativar microfone',
   'set.app': 'Aplicativo', 'srv.channels.n': '{n} sala(s)',
   // conta
@@ -145,7 +145,7 @@ const en = {
   'pwa.mac': 'In Safari on Mac, use File > Add to Dock.', 'pwa.other': 'In the browser menu, look for Install app or Add to home screen.', 'pwa.installed': 'Echo is already installed on this device.',
   'nav.chat': 'Chats', 'conn.ok.short': 'Connected', 'conn.off.short': 'Offline',
   'chip.secure': 'Encrypted', 'chip.direct': 'Direct', 'page.home.sub': 'Your space for calls and streams.',
-  'side.friends': 'Friends', 'side.servers': 'Servers', 'side.nofriends': 'No friends yet.',
+  'side.friends': 'Friends', 'side.convs': 'Chats', 'home.pick': 'Pick someone on the left to chat or call.', 'side.servers': 'Servers', 'side.nofriends': 'No friends yet.',
   'mic.menu': 'Microphone options', 'mic.mute': 'Mute microphone', 'mic.unmute': 'Unmute microphone',
   'set.app': 'App', 'srv.channels.n': '{n} room(s)',
   'auth.tab.login': 'Sign in', 'auth.tab.signup': 'Create account', 'auth.login.t': 'Sign in', 'auth.login.d': 'Welcome back.',

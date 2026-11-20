@@ -4,3 +4,4 @@ node_modules/
 .DS_Store
 desktop/dist/
 .dev.vars
+desktop/helper/bin/

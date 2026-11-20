@@ -14,6 +14,7 @@ import { createAudioPopover, refreshDevices, onDevices, currentInputName, curren
 import { openShareUi, qualityLine } from './call-share.js';
 import { uiSound, playEffect, isEffect, unlockAudio, preloadEffects } from './sfx.js';
 import { initFt, syncFt } from './ft.js';
+import { isDesktopApp, shareAudioTrack, shareKind, stopShareAudio } from './desktop.js';
 
 export const PRESETS = {
   leve:    { w: 1280, h: 720,  fps: 30, kbps: 4000,  hint: 'motion', degr: 'maintain-framerate' },
@@ -50,6 +51,11 @@ export function peerInfo() { return { id: C.peerId, user: peerUser(), present: C
 let activityOn = false;
 export function setActivityMode(on) { activityOn = !!on; renderMode(); }
 /** Manda um efeito sonoro para a outra pessoa (pelo canal de dados direto). */
+/** Mensagens do controle remoto pelo canal de dados (ordenado e confiável). */
+export function sendCtl(obj) { if (C.dc && C.dc.readyState === 'open') { C.dc.send(JSON.stringify({ v: 1, ...obj })); return true; } return false; }
+export function peerMetaInfo() { return C.peerMeta; }
+export function remoteVideo() { return els.video; }
+export function sharingScreen() { return C.screen; }
 export function sendSfx(id) { if (C.dc && C.dc.readyState === 'open') { C.dc.send(JSON.stringify({ v: 1, sfx: id })); return true; } return false; }
 export const peerPresent = () => !!C.peerPresent;
 export const isDirectRoom = () => !!(C.room && C.room.startsWith('d:'));
@@ -268,7 +274,8 @@ async function negotiate() {
 
 async function onSignalMsg(o) {
   if (o.k === 'm') {
-    C.peerMeta = { screenId: o.screenId || null, sharing: !!o.sharing, surface: META_SURFACES.includes(o.surface) ? o.surface : null };
+    C.peerMeta = { screenId: o.screenId || null, sharing: !!o.sharing, surface: META_SURFACES.includes(o.surface) ? o.surface : null, ctl: !!o.ctl };
+    emit('ctl-meta', C.peerMeta);
     if (!C.peerMeta.sharing) {
       C.remoteScreen = null; els.video.srcObject = null;
       if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {});
@@ -301,7 +308,7 @@ async function onSignalMsg(o) {
   } catch (e) { console.warn('sinal', e); }
 }
 
-function sendMeta() { C.signal && C.signal.send({ k: 'm', screenId: C.screen ? C.screen.stream.id : null, sharing: !!C.screen, surface: C.screen ? C.screen.surface : null }); }
+function sendMeta() { C.signal && C.signal.send({ k: 'm', screenId: C.screen ? C.screen.stream.id : null, sharing: !!C.screen, surface: C.screen ? C.screen.surface : null, ctl: !!(C.screen && C.screen.ctl) }); }
 
 function onTrack(e) {
   const stream = e.streams[0] || new MediaStream([e.track]);
@@ -365,6 +372,7 @@ const sfxIn = [];
 function onFlags(str) {
   let m; try { m = JSON.parse(str); } catch { return; }
   if (!m || typeof m !== 'object') return;
+  if (typeof m.ctl === 'string') { emit('ctl-msg', m); return; }
   if (typeof m.sfx === 'string') {
     // efeito sonoro da outra pessoa (com freio: no máximo 6 a cada 5 s)
     const n = Date.now(); while (sfxIn.length && n - sfxIn[0] > 5000) sfxIn.shift();
@@ -536,13 +544,19 @@ async function beginShare({ surface, preset: presetId, audioMode, apps = [], swi
     try { stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: wantAudio }); }
     catch { toast(t('share.fail')); return; }
   }
-  // Ponto de extensão do app de desktop: avisa quais apps entram no áudio (no navegador isso não existe).
-  try { window.echoDesktop && typeof window.echoDesktop.setShareAudioApps === 'function' && window.echoDesktop.setShareAudioApps(apps); } catch {}
-  if (switching && C.screen) { await swapScreenSource(stream, presetId, audioMode, surface); return; }
+  // App para computador: o som dos apps escolhidos vem do programa auxiliar (sem o som da própria ligação)
+  let ctl = false;
+  if (isDesktopApp) {
+    const tr = wantAudio ? await shareAudioTrack() : null;
+    if (tr) { for (const x of stream.getAudioTracks()) { stream.removeTrack(x); x.stop(); } stream.addTrack(tr); }
+    ctl = (await shareKind()) === 'screen';
+  }
+  void apps;
+  if (switching && C.screen) { C.screen.ctl = ctl; await swapScreenSource(stream, presetId, audioMode, surface); return; }
   const v = stream.getVideoTracks()[0], a = stream.getAudioTracks()[0] || null;
   v.contentHint = P.hint; if (a) a.contentHint = 'music';
   const got = (v.getSettings && v.getSettings().displaySurface) || surface;
-  C.screen = { stream, v, a, preset: presetId, audioMode, wantAudio, surface: got, vSender: null, aSender: null };
+  C.screen = { stream, v, a, preset: presetId, audioMode, wantAudio, surface: got, vSender: null, aSender: null, ctl };
   v.addEventListener('ended', () => { if (C.screen && C.screen.v === v) stopShare(true); });
   sendMeta(); addScreenToPc(); renderMode();
   emit('call', callInfo());
@@ -605,6 +619,8 @@ function stopShare(notify) {
   if (!sc) return;
   C.screen = null;
   try { sc.v.stop(); if (sc.a) sc.a.stop(); } catch {}
+  if (isDesktopApp) stopShareAudio();
+  emit('ctl-end-local');
   if (sc.stopMedia) sc.stopMedia();
   for (const s of [sc.vSender, sc.aSender]) { try { if (s && C.pc && C.pc.signalingState !== 'closed') C.pc.removeTrack(s); } catch {} }
   if (els.sharePrev) els.sharePrev.srcObject = null;
