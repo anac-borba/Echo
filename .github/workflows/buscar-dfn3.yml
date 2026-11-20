@@ -1,36 +1,40 @@
-# Ferramenta: baixa o pacote do DeepFilterNet3 (MIT/Apache-2.0) do npm e guarda numa branch,
-# para ser revisado e copiado para web/js/vendor/. Roda só quando esta branch recebe um push.
-name: Buscar DeepFilterNet3
+# Ferramenta: compila o DeepFilterNet3 (libDF, MIT/Apache-2.0) para WebAssembly a partir do código original
+# (github.com/Rikorose/DeepFilterNet) e guarda o resultado numa branch, para ser revisado e copiado para web/js/vendor/.
+# Roda só quando esta branch recebe um push.
+name: Compilar DeepFilterNet3
 on:
   push:
     branches: [ferramentas]
 permissions:
   contents: write
 jobs:
-  buscar:
+  compilar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Baixar
+      - uses: actions/checkout@v4
+        with:
+          repository: Rikorose/DeepFilterNet
+          path: df
+      - name: Compilar
         shell: bash
         run: |
           set +e
-          W="$GITHUB_WORKSPACE/vendor-dfn3"; rm -rf "$W"; mkdir -p "$W/assets"; L="$W/LOG.txt"
-          cd /tmp && npm pack deepfilternet3-noise-filter@1.3.0 >>"$L" 2>&1 && tar -xzf deepfilternet3-noise-filter-1.3.0.tgz && cp -r package/. "$W/"
-          B=https://cdn.mezon.ai/AI/models/datas/noise_suppression/deepfilternet3/v3
-          for f in pkg/df_bg.wasm pkg/df.js models/DeepFilterNet3_onnx.tar.gz; do
-            echo "== $B/$f" >>"$L"; curl -sSL -A "Mozilla/5.0" -o "$W/assets/$(basename $f)" -w "%{http_code} %{size_download}\n" "$B/$f" >>"$L" 2>&1
-          done
-          echo "== github model" >>"$L"
-          curl -sSL -o "$W/assets/DeepFilterNet3_onnx.github.tar.gz" -w "%{http_code} %{size_download}\n" https://github.com/Rikorose/DeepFilterNet/raw/main/models/DeepFilterNet3_onnx.tar.gz >>"$L" 2>&1
-          cd "$W" && sha256sum assets/* >> "$L"; ls -la assets >> "$L"
+          W="$GITHUB_WORKSPACE/vendor-dfn3"; rm -rf "$W"; mkdir -p "$W"; L="$W/LOG.txt"
+          (cd df && git log -1 --format='%H %cd' >>"$L")
+          rustup target add wasm32-unknown-unknown >>"$L" 2>&1
+          curl -sSf https://rustwasm.github.io/wasm-pack/installer/init.sh | sh >>"$L" 2>&1
+          grep -n "wasm" df/libDF/Cargo.toml >>"$L" 2>&1
+          (cd df/libDF && wasm-pack build --release --target web --out-dir "$W/pkg" --features wasm) >>"$L" 2>&1
+          echo "exit $?" >>"$L"
+          cp df/models/DeepFilterNet3_onnx.tar.gz "$W/model.tar.gz" >>"$L" 2>&1
+          cp df/LICENSE* "$W/" 2>/dev/null
+          ls -la "$W" "$W/pkg" >>"$L" 2>&1
           exit 0
       - name: Guardar
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add vendor-dfn3
-          git commit -m "DeepFilterNet3: pacote do npm para revisão [skip ci]" || exit 0
+          git add -f vendor-dfn3
+          git commit -m "DeepFilterNet3 compilado para revisão [skip ci]" || exit 0
           git push origin HEAD:ferramentas-resultado --force
