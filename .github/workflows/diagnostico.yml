@@ -1,0 +1,36 @@
+# Ferramenta: roda a mesma montagem do app e guarda o registro completo numa branch (para achar erros).
+name: Diagnostico do app
+on:
+  push:
+    branches: [diagnostico]
+permissions:
+  contents: write
+jobs:
+  montar:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Montar com registro
+        shell: bash
+        working-directory: desktop
+        run: |
+          set +e
+          L="$GITHUB_WORKSPACE/log-${{ runner.os }}.txt"
+          { echo "== node $(node -v) npm $(npm -v)"; npm install --no-audit --no-fund 2>&1; echo "== exit install $?";
+            CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --publish never 2>&1; echo "== exit build $?";
+            ls -la dist 2>&1; } > "$L"
+          exit 0
+      - name: Guardar registro
+        shell: bash
+        run: |
+          git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
+          cp "log-${{ runner.os }}.txt" /tmp/l.txt
+          git checkout -q --orphan r && git rm -rqf --cached . && git clean -fdxq
+          cp /tmp/l.txt "log-${{ runner.os }}.txt" && git add "log-${{ runner.os }}.txt" && git commit -qm "registro ${{ runner.os }} [skip ci]"
+          git push -f origin "r:diagnostico-${{ runner.os }}"
