@@ -134,12 +134,15 @@ export async function joinRoom(room) {
   }
   try {
     // 48 kHz fixos: a rede de ruído (DTLN) trabalha nessa taxa; o navegador converte para o fone/caixa
-    if (!C.ac) { const AC = window.AudioContext || window.webkitAudioContext; try { C.ac = new AC({ sampleRate: 48000, latencyHint: 'interactive' }); } catch { C.ac = new AC(); } }
+    // no iPhone sem taxa fixa: forçar 48 kHz enquanto o alto-falante roda em outra taxa atrapalhava o áudio da ligação
+    if (!C.ac) { const AC = window.AudioContext || window.webkitAudioContext; try { C.ac = IOS ? new AC({ latencyHint: 'interactive' }) : new AC({ sampleRate: 48000, latencyHint: 'interactive' }); } catch { C.ac = new AC(); } }
     C.ac.resume && C.ac.resume();
     els.remoteMic.muted = false;
     els.remoteMic.play && els.remoteMic.play().catch(() => {});
   } catch {}
-  try { navigator.audioSession && (navigator.audioSession.type = 'play-and-record'); } catch {}
+  // "play-and-record" à mão manda o som para o alto-falante de ouvido (o de cima, baixinho) quando não há fone: era por
+  // isso que, sem fone, a pessoa não ouvia nada. No automático o Safari usa o alto-falante normal durante a ligação.
+  try { if (navigator.audioSession && navigator.audioSession.type !== 'auto') navigator.audioSession.type = 'auto'; } catch {}
   C.muted = false; C.deaf = false; C.held = false; C.t0 = null; C.stat = {};
   // volume no zero vindo de uma ligação antiga deixava a pessoa muda sem ninguém perceber: cada ligação começa audível
   let fixed = false;

@@ -26,9 +26,14 @@ export function modeFlags() {
   return { ec: true, ns: true, agc: true };
 }
 
+// iPhone/iPad: o próprio sistema já faz o cancelamento de eco e a limpeza da voz (o "Voice Processing" do iOS).
+// Passar o microfone pelo Web Audio ali era o que deixava a pessoa muda quando estava SEM fone: no alto-falante o
+// iOS troca o modo do áudio no meio do caminho, o Web Audio fica "interrompido" e o que sai da cadeia é silêncio.
+const IOS_DEV = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 export function micConstraints() {
   const f = modeFlags();
   const a = { channelCount: 1, sampleRate: 48000, echoCancellation: f.ec, noiseSuppression: f.ns, autoGainControl: f.agc };
+  if (IOS_DEV) { delete a.sampleRate; a.echoCancellation = true; }   // o iOS escolhe a taxa conforme a saída (alto-falante, fone, Bluetooth)
   if (NS() === 'light') a.voiceIsolation = true; // Safari/Chrome novos: isolamento de voz nativo
   if (CFG.micId) a.deviceId = { ideal: CFG.micId };
   return a;
@@ -120,7 +125,7 @@ export async function openMic(ac) {
   // Os filtros passam pelo Web Audio: se ele estiver parado (o navegador não deixou ligar sem um toque), o que sai é silêncio.
   // Então confere antes; parado, manda o microfone direto COM a supressão do próprio navegador ligada.
   if (ac && ac.state !== 'running') { try { await Promise.race([ac.resume(), new Promise((r) => setTimeout(r, 400))]); } catch {} }
-  let useChain = !!ac && ac.state === 'running' && chainWanted();
+  let useChain = !IOS_DEV && !!ac && ac.state === 'running' && chainWanted();
   const audioC = micConstraints();
   // RNNoise no lugar do filtro do navegador; se não carregar, fica o do navegador (como no modo leve)
   const dfn = useChain && (await ensureDfn3(ac));
@@ -136,7 +141,7 @@ export async function openMic(ac) {
   const stopRaw = () => raw.getTracks().forEach((t) => t.stop());
   if (!useChain) {
     // sem filtros: mesmo assim passa por um controle de volume (se o Web Audio estiver rodando)
-    if (ac && ac.state === 'running' && !chainBroken) {
+    if (!IOS_DEV && ac && ac.state === 'running' && !chainBroken) {
       const nodes = [];
       try {
         const src = ac.createMediaStreamSource(raw); nodes.push(src);

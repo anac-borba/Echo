@@ -2,11 +2,12 @@
 // Novidades do Echo: o que mudou em cada versão, com um clipe curto das telas novas (em img/novidades/).
 // Para uma versão nova: acrescente um item no começo da lista. Clipes: mp4 curtos (gravados com dev/novidades.cjs).
 // mude junto com VERSION no sw.js: aparece em Configurações › Atualizações para saber qual versão está aberta
-export const SITE_VERSION = '2026-11-21-1';
+export const SITE_VERSION = '2026-11-21-2';
 export const NOVIDADES = [
   {
     date: '2026-11-21',
     items: [
+      { t: 'iPhone sem fone funcionando', d: 'Sem fone, o som da ligação saía no alto-falante de ouvido (baixinho) e o microfone podia ficar mudo. Agora sai no alto-falante normal e a voz vai direto, com o cancelamento de eco do próprio iPhone.' },
       { t: 'Transmissão numa pílula só', d: 'No computador, transmitindo, a barra mostra uma pílula com a miniatura ao vivo, o que está indo e a qualidade. Clique nela para trocar o que transmite, mudar a qualidade, ligar ou desligar o som ou parar.' },
       { t: 'A tela no palco', d: 'Transmitindo, a sua tela ocupa o meio e as pessoas ficam em cartões ao lado. Sem painel de controles ocupando espaço.' },
       { t: 'Escolher o que transmitir de uma vez', d: 'No app do computador, a janela de escolher já tem a tela ou janela, a qualidade e o som juntos. Sem passar por outra janela antes.' },
