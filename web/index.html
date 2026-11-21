@@ -263,6 +263,9 @@
         <symbol id="r-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
         <symbol id="r-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
         <symbol id="r-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+        <symbol id="r-swap" viewBox="0 0 24 24"><path d="M4 9h13l-3-3M20 15H7l3 3"/></symbol>
+        <symbol id="r-tune" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+        <symbol id="r-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="3" fill="currentColor" stroke="none"/></symbol>
         <symbol id="r-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
         <symbol id="r-unfull" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></symbol>
         <symbol id="r-vol" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 0 1 0 6"/></symbol>
@@ -323,37 +326,17 @@
           </div>
         </div>
 
-        <!-- Transmitindo (computador) -->
+        <!-- Transmitindo (computador): a tela no palco, as pessoas ao lado; os controles ficam na pílula da barra -->
         <div id="sharing" class="sharing" hidden>
-          <div class="sh-main">
-            <div class="vid-card prev">
-              <video id="share-preview" muted playsinline autoplay></video>
-              <span class="rchip glass live-chip"><span class="rdot red"></span><span data-i18n="sh.you">Você está transmitindo</span></span>
-            </div>
-            <div class="people">
-              <div class="rcard pcard"><div id="pc-me-av" class="pc-av"></div><div class="pc-t"><b data-i18n="sh.you.l">você</b><small id="pc-me-sub"></small></div><div id="pc-me-wave" class="rwave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-              <div class="rcard pcard"><div id="pc-her-av" class="pc-av"></div><div class="pc-t"><b id="pc-her-name"></b><small id="pc-her-sub"></small></div><div id="pc-her-wave" class="rwave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-            </div>
+          <div class="vid-card prev">
+            <video id="share-preview" muted playsinline autoplay></video>
+            <span class="rchip glass live-chip"><span class="rdot red"></span><span data-i18n="sh.you">Você está transmitindo</span></span>
+            <span id="sh-src" class="rchip glass sh-src"></span>
           </div>
-          <aside class="rcard panel">
-            <h3 data-i18n="sh.title">Transmissão</h3>
-            <div>
-              <div class="rlab" id="sh-sees"></div>
-              <div class="rrow fill"><div class="rib sm"><svg class="i s17"><use id="sh-what-ico" href="#r-win"/></svg></div><div class="t"><b id="sh-what"></b><small id="sh-what2"></small></div><button id="btn-share-switch" class="rlink" type="button" data-i18n="sh.switch">Trocar</button></div>
-            </div>
-            <div>
-              <div class="rlab" data-i18n="share.quality">Qualidade</div>
-              <div id="sh-q" class="rseg g3" role="group"></div>
-              <div id="sh-qline" class="rhelp"></div>
-            </div>
-            <div>
-              <div class="rlab" data-i18n="sh.audio">Áudio da transmissão</div>
-              <div class="rrow sel"><div class="t"><b id="sh-a-t"></b><small id="sh-a-d"></small></div><button id="btn-share-audio" class="rmini" type="button"></button></div>
-              <p id="sharing-warn" class="rwarn" hidden></p>
-            </div>
-            <div class="rchips"><span id="sh-c-path" class="rchip"></span><span id="sh-c-loss" class="rchip"></span><span id="sh-c-rate" class="rchip"></span></div>
-            <button id="btn-share-stop" class="rbtn p" type="button" data-i18n="sh.stop">Parar transmissão</button>
-          </aside>
+          <div class="people">
+            <div class="rcard pcard"><div id="pc-me-av" class="pc-av"></div><div class="pc-t"><b data-i18n="sh.you.l">você</b><small id="pc-me-sub"></small></div><div id="pc-me-wave" class="rwave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+            <div class="rcard pcard"><div id="pc-her-av" class="pc-av"></div><div class="pc-t"><b id="pc-her-name"></b><small id="pc-her-sub"></small></div><div id="pc-her-wave" class="rwave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          </div>
         </div>
 
         <!-- Atividades: desligadas por js/flags.js (o código dos jogos continua no projeto) -->
@@ -379,6 +362,7 @@
         <span class="dk-sep" aria-hidden="true"></span>
         <div class="dk-grp fun">
           <div class="dk" id="dk-screen"><button id="btn-screen" class="rrb" type="button"><svg class="i"><use href="#r-scr"/></svg><span class="lbl sr-only" data-i18n="dock.share">Transmitir tela</span></button><span class="cap" data-i18n="dock.cap.screen">Tela</span></div>
+          <div class="dk dk-pill" id="dk-pill" hidden><div class="shp"><button id="sh-pill" class="shp-o" type="button" aria-haspopup="dialog" aria-expanded="false"><span class="shp-th"><video id="sh-pill-v" muted playsinline autoplay aria-hidden="true"></video></span><span class="shp-t"><b id="sh-pill-t"></b><small id="sh-pill-d"></small></span><svg class="i shp-ch"><use href="#r-up"/></svg></button><button id="sh-pill-stop" class="shp-x" type="button" data-i18n-aria="sh.stop" aria-label="Parar transmissão"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="3" fill="currentColor" stroke="none"/></svg></button></div><span class="cap" data-i18n="dock.cap.sharing">Transmitindo</span></div>
           <div class="dk"><button id="btn-watch" class="rrb" type="button" data-i18n-aria="dock.watch" aria-label="Assistir juntos"><svg class="i"><use href="#c-watch"/></svg></button><span class="cap" data-i18n="dock.cap.watch">Assistir</span></div>
           <div class="dk"><button id="btn-games" class="rrb" type="button" data-i18n-aria="dock.games" aria-label="Jogar"><svg class="i"><use href="#t-games"/></svg></button><span class="cap" data-i18n="dock.cap.games">Jogar</span></div>
           <div class="dk"><button id="btn-sfx" class="rrb" type="button" aria-haspopup="dialog" aria-expanded="false" data-i18n-aria="dock.sfx" aria-label="Efeitos sonoros"><svg class="i"><use href="#c-sfx"/></svg></button><span class="cap" data-i18n="dock.cap.sfx">Efeitos</span></div>
@@ -392,6 +376,7 @@
         <button id="btn-gear" class="rrb" type="button" hidden><svg class="i"><use href="#r-gear"/></svg></button>
       </nav>
       <aside id="room-chat" class="room-chat" hidden aria-label="Chat"></aside>
+      <div id="share-pop" class="rpop share-pop" role="dialog" aria-modal="false" data-i18n-aria="sh.title" aria-label="Transmissão" tabindex="-1" hidden></div>
       <div id="sfx-pop" class="rpop sfx-pop" role="dialog" aria-modal="false" tabindex="-1" hidden></div>
 
       <div id="pop-scrim" class="rscrim" hidden></div>

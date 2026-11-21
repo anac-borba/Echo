@@ -864,3 +864,77 @@ html .vid-card .ctl-btn.on, html.lite .vid-card .rib.glass.ctl-btn.on { backgrou
   .room.ft-on .rpop:not([hidden]) ~ .fts, .room.ft-on .room-chat:not([hidden]) ~ .fts { visibility: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .fts.live.settle, .fts-scrim.settle { transition-duration: .01s !important; } }
+
+/* ============ transmitindo no computador (v4) ============
+   A tela vai no palco inteiro e as pessoas em cartões ao lado. Tudo de transmissão mora numa pílula na barra:
+   miniatura ao vivo, nome do que vai, qualidade e som; um quadradinho para parar. Clicou, abre o menu dela. */
+@media (min-width: 821px) and (min-height: 521px) {
+  .sharing { display: grid; grid-template-columns: minmax(0, 1fr) 232px; grid-template-rows: minmax(0, 1fr); gap: 16px; padding: 8px 28px 18px; align-items: stretch; overflow: hidden; }
+  .sharing .vid-card.prev { width: 100%; height: 100%; aspect-ratio: auto; align-self: stretch; border-radius: 20px; background: #141417; box-shadow: inset 0 0 0 .5px rgba(255, 255, 255, .08); }
+  .sharing .vid-card.prev video { background: #141417; }
+  .sharing .people { flex-direction: column; gap: 12px; }
+  .sharing .pcard { flex: none; height: 148px; position: relative; flex-direction: column; justify-content: center; gap: 0; padding: 0; border-radius: 18px; background: color-mix(in srgb, var(--rk-ink) 5%, transparent); box-shadow: none; }
+  .sharing .pcard .pc-av { width: 64px; height: 64px; }
+  .sharing .pcard .pc-av.speaking { box-shadow: none; }
+  .sharing .pcard:has(.pc-av.speaking) { box-shadow: inset 0 0 0 2px var(--rk-green); }
+  .sharing .pcard .pc-t { position: absolute; left: 12px; right: 40px; bottom: 9px; }
+  .sharing .pcard .pc-t b { font-size: 12.5px; }
+  .sharing .pcard .pc-t small { display: none; }
+  .sharing .pcard .rwave { position: absolute; right: 12px; bottom: 10px; height: 14px; }
+  .sh-src { position: absolute; left: 16px; bottom: 16px; top: auto; z-index: 2; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sh-src:empty { display: none; }
+  /* barra: a pílula no lugar do botão de tela */
+  .room .rdock.shar #dk-screen { display: none; }
+}
+.sh-src { display: none; }
+@media (min-width: 821px) and (min-height: 521px) { .sh-src { display: inline-flex; } }
+.dk-pill[hidden] { display: none !important; }
+@media (max-width: 820px), (orientation: landscape) and (max-height: 520px) { .dk-pill { display: none !important; } }
+.shp { display: flex; align-items: center; gap: 2px; height: var(--dk-h, 46px); padding: 0 5px 0 6px; border-radius: 17px; background: color-mix(in srgb, #8B7DF8 18%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, #8B7DF8 40%, transparent); }
+.shp-o { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 8px 0 2px; border: 0; border-radius: 12px; background: none; color: #E6E1FF; font: 600 13px/1.2 var(--font); cursor: pointer; text-align: left; }
+.shp-o:hover { background: color-mix(in srgb, #8B7DF8 14%, transparent); }
+.shp-th { position: relative; width: 50px; height: 30px; border-radius: 7px; overflow: hidden; background: #141417; box-shadow: 0 0 0 1px rgba(255, 255, 255, .14); flex: none; }
+.shp-th video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.shp-t { display: flex; flex-direction: column; min-width: 0; max-width: 180px; }
+.shp-t b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shp-t small { font-size: 11px; font-weight: 500; color: #A79CF5; white-space: nowrap; }
+.shp-ch { width: 11px; height: 11px; stroke-width: 2.6; color: #A79CF5; transition: transform .2s var(--ease, ease); }
+.shp-o[aria-expanded="true"] .shp-ch { transform: rotate(180deg); }
+.shp-x { width: 34px; height: 34px; border: 0; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, #FF453A 18%, transparent); color: #FF6961; cursor: pointer; transition: background .15s; }
+.shp-x:hover { background: color-mix(in srgb, #FF453A 28%, transparent); }
+.shp-x svg.i { width: 14px; height: 14px; }
+html[data-theme="claro"] .shp-o, html[data-theme="claro"] .shp-t small, html[data-theme="claro"] .shp-ch { color: #4B3FC4; }
+/* menu da pílula */
+.share-pop { width: 340px; padding: 8px; border-radius: 22px; }
+.shp-pv { position: relative; height: 172px; border-radius: 14px; overflow: hidden; background: #141417; display: grid; place-items: center; color: var(--rk-mut); }
+.shp-pv video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.shp-pv .live-chip { left: 10px; top: 10px; height: 24px; font-size: 11.5px; padding: 0 10px; }
+.shp-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 8px 6px; }
+.shp-h b { font-size: 14px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shp-h small { font-size: 12px; color: var(--rk-mut); flex: none; }
+.shm { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 40px; padding: 0 10px; border: 0; border-radius: 10px; background: none; color: var(--rk-ink); font: 400 13.5px/1.25 var(--font); text-align: left; }
+button.shm { cursor: pointer; }
+button.shm:hover { background: var(--rk-fill); }
+.shm > svg.i { color: #B4A9FF; flex: none; }
+.shm-l { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.shm-l small { font-size: 11.5px; color: var(--rk-mut); }
+.shm-v { display: flex; align-items: center; gap: 6px; color: var(--rk-mut); font-size: 12.5px; }
+.shm-ch { transform: rotate(90deg); transition: transform .2s var(--ease, ease); opacity: .7; }
+.shm.open .shm-ch { transform: rotate(180deg); }
+.shm.danger, .shm.danger > svg.i { color: #FF6961; }
+.shq { display: grid; gap: 1px; margin: 2px 0 4px; padding: 4px; border-radius: 12px; background: color-mix(in srgb, var(--rk-ink) 5%, transparent); }
+.shq button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 7px 10px; border: 0; border-radius: 9px; background: none; color: var(--rk-ink); font: 500 13px/1.25 var(--font); cursor: pointer; text-align: left; }
+.shq button small { font-size: 11.5px; color: var(--rk-mut); font-weight: 400; }
+.shq button:hover { background: var(--rk-fill); }
+.shq button[aria-checked="true"] { background: color-mix(in srgb, #8B7DF8 20%, transparent); }
+.shq button[aria-checked="true"] b { color: #C9C0FF; }
+.shsw { width: 38px; height: 23px; padding: 2px; border: 0; border-radius: 12px; background: color-mix(in srgb, var(--rk-ink) 22%, transparent); display: flex; justify-content: flex-start; flex: none; cursor: pointer; transition: background .16s; }
+.shsw span { width: 19px; height: 19px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+.shsw[aria-checked="true"] { background: #30D158; justify-content: flex-end; }
+.shsw:disabled { opacity: .4; cursor: default; }
+.shp-warn { margin: 4px 10px; font-size: 12px; line-height: 1.4; color: #FFB84D; }
+.shp-st { margin: 2px 10px 4px; font-size: 11.5px; color: var(--rk-mut); }
+.shp-st:empty { display: none; }
+.shp-sep { height: 1px; margin: 4px 8px; background: var(--rk-hair); }
+.room .rdock .dk-pill .cap { display: none; }
+.shq[hidden] { display: none; }

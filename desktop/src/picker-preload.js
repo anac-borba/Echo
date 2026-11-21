@@ -5,6 +5,6 @@ contextBridge.exposeInMainWorld('echo', {
   sources: () => ipcRenderer.invoke('picker:sources'),
   platform: () => ipcRenderer.invoke('picker:platform'),
   apps: () => ipcRenderer.invoke('picker:apps'),
-  choose: (id, audio) => ipcRenderer.send('picker:choose', { id, audio }),
+  choose: (id, audio, preset) => ipcRenderer.send('picker:choose', { id, audio, preset }),
   cancel: () => ipcRenderer.send('picker:cancel'),
 });

@@ -99,6 +99,14 @@ function tiles(options, cur, onChange, cols) {
   box.append(...items);
   return box;
 }
+/** Escolha única lado a lado (segmentado, como nos Ajustes do Mac). */
+function segRow(label, options, cur, onChange, foot) {
+  const seg = el('div', { class: 'cfh-seg sseg', role: 'radiogroup', 'aria-label': label });
+  seg.style.setProperty('--n', options.length);
+  const paint = (v) => seg.replaceChildren(...options.map(([id, l]) => el('button', { type: 'button', role: 'radio', 'aria-checked': String(String(id) === String(v)), onClick: () => { paint(id); onChange(id); } }, l)));
+  paint(cur);
+  return el('div', { class: 'sr sr-seg' }, el('span', { class: 'sr-t', text: label }), seg, foot || null);
+}
 const inputRow = (label, input) => { input.classList.add('sr-in'); return row(label, null, input, { tag: 'label', cls: 'sr-field' }); };
 const btn = (text, onClick, cls = '') => el('button', { class: 'sbtn ' + cls, type: 'button', onClick }, text);
 
@@ -352,8 +360,10 @@ function pageVoice() {
     group(null, null,
       deviceSelect(t('voice.mic'), 'audioinput', 'micId', () => { if (inCall()) swapMic(); }),
       deviceSelect(t('voice.spk'), 'audiooutput', 'spkId', applyOutputPrefs)),
-    group(t('ns.title'), null, pickList([['auto', t('ns.auto')], ['strong', t('ns.strong')], ['light', t('ns.light')], ['off', t('ns.off')]], CFG.nsMode || 'auto',
-      (v) => { CFG.nsMode = v; saveCfg(); refreshMic(); })),
+    isCompact() ? group(t('ns.title'), null, pickList([['auto', t('ns.auto')], ['strong', t('ns.strong')], ['light', t('ns.light')], ['off', t('ns.off')]], CFG.nsMode || 'auto',
+      (v) => { CFG.nsMode = v; saveCfg(); refreshMic(); }))
+      : group(null, null, segRow(t('sc.ns'), [['off', t('ns.off')], ['light', t('ns.light')], ['strong', t('ns.strong')], ['auto', t('ns.auto')]], CFG.nsMode || 'auto',
+        (v) => { CFG.nsMode = v; saveCfg(); refreshMic(); })),
     group(t('voice.test'), null, el('div', { class: 'sr' }, el('span', { class: 'sr-l' }, meter), el('span', { class: 'sr-c' }, testBtn))),
     group(t('voice.vol'), null,
       rangeRow(t('voice.vol.mic'), 0, 1.5, 0.05, CFG.micVol ?? 1, (v) => Math.round(v * 100) + '%', (v) => { CFG.micVol = v; saveCfg(); setMicVolume({ own: v }); }),
@@ -367,6 +377,22 @@ function pageVoice() {
 /* ───────────── página: transmissão ───────────── */
 function pageStream() {
   const s = CFG.share;
+  if (!isCompact()) {
+    // computador: só os padrões, compactos; durante a ligação tudo isso também fica na pílula da barra
+    const line = el('small', { class: 'sseg-d' });
+    const ql = (id) => { line.textContent = t('preset.' + id + '.d'); };
+    ql(s.preset);
+    return [
+      group(null, t('stream.desk.foot'),
+        segRow(t('stream.q.def'), Object.keys(PRESETS).map((id) => [id, t('preset.' + id)]), s.preset, (v) => { s.preset = v; saveCfg(); ql(v); }, line),
+        selectRow(t('stream.first'), SURFACES.map((id) => [id, t('surf.' + id)]), s.surface, (v) => { s.surface = v; saveCfg(); }),
+        switchRow(t('stream.appsound'), null, s.audio !== false && s.audioMode !== 'none', (v) => { s.audio = v; s.audioMode = v ? 'app' : 'none'; saveCfg(); }),
+        selectRow(t('stream.kbps'), [[128, '128 kbps'], [192, '192 kbps'], [256, '256 kbps'], [320, '320 kbps']], s.audioKbps, (v) => { s.audioKbps = Number(v); saveCfg(); })),
+      group(t('voice.video'), null,
+        selectRow(t('voice.codec'), [['h264', t('codec.h264')], ['vp9', t('codec.vp9')], ['av1', 'AV1'], ['vp8', 'VP8'], ['auto', t('codec.auto')]], CFG.codec, (v) => { CFG.codec = v; saveCfg(); toast(t('codec.next')); }),
+        switchRow(t('voice.stats'), t('voice.stats.d'), CFG.stats, (v) => { CFG.stats = v; saveCfg(); applyOutputPrefs(); })),
+    ];
+  }
   return [
     group(t('share.quality'), t('stream.tip'), pickList(Object.keys(PRESETS).map((id) => [id, t('preset.' + id), t('preset.' + id + '.d')]), s.preset, (v) => { s.preset = v; saveCfg(); })),
     el('section', { class: 'sg' }, el('h3', { class: 'sg-h', text: t('share.what') }),
@@ -481,6 +507,9 @@ addDict('pt', {
   'set.update': 'Atualizações', 'upd.site': 'Echo', 'upd.site.d': 'Confere se tem versão nova do Echo e instala na hora.',
   'upd.force': 'Procurar atualização', 'upd.forcing': 'Atualizando…', 'upd.app': 'Echo para computador', 'upd.ver': 'Versão {v}',
   'upd.check': 'Procurar atualização', 'upd.checking': 'Procurando…', 'upd.none': 'Você está na versão mais nova.', 'upd.dl': 'Baixando a versão {v}… {p}%',
+  'set.call': 'Voz e transmissão', 'set.g.call': 'Ligação', 'set.g.general': 'Geral', 'set.g.accounts': 'Contas', 'sc.acct1': 'Conta e trocar de conta',
+  'stream.q.def': 'Qualidade padrão', 'stream.first': 'Abrir primeiro em', 'stream.appsound': 'Transmitir o som do app',
+  'stream.desk.foot': 'Isso só define o começo. Durante a ligação, tudo isso também fica na pílula de transmissão da barra.',
   'sc.search': 'Buscar ajuste', 'sc.personalize': 'Personalize o perfil', 'sc.ns': 'Supressão de ruído', 'sc.voiceMore': 'Microfone, saída e mais', 'sc.voiceTitle': 'Voz e vídeo', 'sc.general': 'Geral', 'sc.accounts': 'Contas', 'sc.none': 'Nenhum ajuste com esse nome.',
   'upd.sitever': '(versão aberta: {v})', 'upd.news': 'Novidades', 'upd.done': 'Echo atualizado.', 'upd.ready': 'A versão {v} está pronta.', 'upd.restart': 'Reiniciar e atualizar', 'upd.err': 'Não deu para atualizar: {e}',
   'desk.title': 'No computador', 'desk.ctl': 'Deixar pedirem controle', 'desk.ctl.d': 'Quem assiste a sua tela pode pedir para usar o mouse e o teclado. Cada pedido abre uma janela para você permitir.',
@@ -490,6 +519,9 @@ addDict('en', {
   'set.update': 'Updates', 'upd.site': 'Echo', 'upd.site.d': 'Checks for a newer Echo and installs it right away.',
   'upd.force': 'Check for updates', 'upd.forcing': 'Updating…', 'upd.app': 'Echo for desktop', 'upd.ver': 'Version {v}',
   'upd.check': 'Check for updates', 'upd.checking': 'Checking…', 'upd.none': 'You have the newest version.', 'upd.dl': 'Downloading version {v}… {p}%',
+  'set.call': 'Voice and streaming', 'set.g.call': 'Calls', 'set.g.general': 'General', 'set.g.accounts': 'Accounts', 'sc.acct1': 'Account and switching',
+  'stream.q.def': 'Default quality', 'stream.first': 'Open first on', 'stream.appsound': 'Stream the app’s sound',
+  'stream.desk.foot': 'This only sets how it starts. During a call, all of it is also in the streaming pill on the bar.',
   'sc.search': 'Search settings', 'sc.personalize': 'Personalize your profile', 'sc.ns': 'Noise suppression', 'sc.voiceMore': 'Microphone, output and more', 'sc.voiceTitle': 'Voice and video', 'sc.general': 'General', 'sc.accounts': 'Accounts', 'sc.none': 'No setting by that name.',
   'upd.sitever': '(open version: {v})', 'upd.news': "What's new", 'upd.done': 'Echo updated.', 'upd.ready': 'Version {v} is ready.', 'upd.restart': 'Restart and update', 'upd.err': "Couldn't update: {e}",
   'desk.title': 'On this computer', 'desk.ctl': 'Allow control requests', 'desk.ctl.d': 'People watching your screen can ask to use your mouse and keyboard. Each request opens a window for you to allow.',
@@ -600,44 +632,44 @@ function pageUpdate() {
    Voz e vídeo resolvidos ali mesmo (supressão de ruído e volume do microfone), o resto em grupos e as contas. */
 function settingsHome() {
   const me = D.me;
-  const box = el('div', { class: 'sc' });
-  const q = el('input', { type: 'search', class: 'sc-q', placeholder: t('sc.search'), 'aria-label': t('sc.search') });
+  const box = el('div', { class: 'cfh' });
+  const q = el('input', { type: 'search', class: 'cfh-q', placeholder: t('sc.search'), 'aria-label': t('sc.search') });
   const go = (id) => () => openSettings(id);
   const navRow = (id, label, value, extra) => {
-    const b = el('button', { class: 'sr sc-row', type: 'button', onClick: go(id) },
+    const b = el('button', { class: 'sr cfh-row', type: 'button', onClick: go(id) },
       el('span', { class: 'sr-l' }, el('span', { class: 'sr-t', text: label })),
-      el('span', { class: 'sr-c' }, value ? el('span', { class: 'sc-v', text: value }) : null, extra || null, icon('i-chev', 'ico chev')));
+      el('span', { class: 'sr-c' }, value ? el('span', { class: 'cfh-v', text: value }) : null, extra || null, icon('i-chev', 'ico chev')));
     b.dataset.k = (label + ' ' + (value || '')).toLowerCase();
     return b;
   };
-  const card = el('button', { class: 'sc-card', type: 'button', onClick: go('profile') }, avatar(me, 'lg', { decoration: false }),
-    el('span', { class: 'sc-ct' }, el('b', { text: displayName(me) }), el('small', { text: t('sc.personalize') })), icon('i-chev', 'ico chev'));
+  const card = el('button', { class: 'cfh-card', type: 'button', onClick: go('profile') }, avatar(me, 'lg', { decoration: false }),
+    el('span', { class: 'cfh-ct' }, el('b', { text: displayName(me) }), el('small', { text: t('sc.personalize') })), icon('i-chev', 'ico chev'));
   card.dataset.k = (displayName(me) + ' ' + t('sc.personalize') + ' ' + t('set.profile')).toLowerCase();
   // supressão de ruído: um seletor só, com as opções lado a lado
   const modes = [['off', t('ns.off')], ['light', t('ns.light')], ['strong', t('ns.strong')], ['auto', t('ns.auto')]];
-  const seg = el('div', { class: 'sc-seg', role: 'radiogroup', 'aria-label': t('sc.ns') });
+  const seg = el('div', { class: 'cfh-seg', role: 'radiogroup', 'aria-label': t('sc.ns') });
   const paintSeg = () => seg.replaceChildren(...modes.map(([v, l]) => el('button', { type: 'button', role: 'radio', 'aria-checked': String((CFG.nsMode || 'auto') === v), onClick: () => { CFG.nsMode = v; saveCfg(); refreshMic(); paintSeg(); } }, l)));
   paintSeg();
-  const nsRow = el('div', { class: 'sr sc-ns' }, el('span', { class: 'sr-t', text: t('sc.ns') }), seg);
+  const nsRow = el('div', { class: 'sr cfh-ns' }, el('span', { class: 'sr-t', text: t('sc.ns') }), seg);
   nsRow.dataset.k = (t('sc.ns') + ' ' + t('set.voice') + ' ruído noise').toLowerCase();
   const vol = rangeRow(t('voice.vol.mic'), 0, 1.5, 0.05, CFG.micVol ?? 1, (v) => Math.round(v * 100) + '%', (v) => { CFG.micVol = v; saveCfg(); setMicVolume({ own: v }); });
   vol.dataset.k = (t('voice.vol.mic') + ' volume microfone').toLowerCase();
   const voiceMore = navRow('voice', t('sc.voiceMore'));
   const langVal = getLang() === 'en' ? 'English' : 'Português';
-  const accts = (D.accounts || []).map((a) => { const b = el('button', { class: 'sr sc-row', type: 'button', onClick: () => { closeSettings(); emit('switch-account', a.id); } },
-    el('span', { class: 'sr-l' }, el('span', { class: 'sc-acc' }, avatar(a, 'xs'), el('span', { class: 'sr-t', text: '@' + a.username }))), el('span', { class: 'sr-c' }, el('span', { class: 'sc-v', text: t('acc.use') })));
+  const accts = (D.accounts || []).map((a) => { const b = el('button', { class: 'sr cfh-row', type: 'button', onClick: () => { closeSettings(); emit('switch-account', a.id); } },
+    el('span', { class: 'sr-l' }, el('span', { class: 'cfh-acc' }, avatar(a, 'xs'), el('span', { class: 'sr-t', text: '@' + a.username }))), el('span', { class: 'sr-c' }, el('span', { class: 'cfh-v', text: t('acc.use') })));
     b.dataset.k = ('@' + a.username + ' ' + t('sc.accounts')).toLowerCase(); return b; });
-  const addAcc = el('button', { class: 'sr sc-row', type: 'button', onClick: () => { closeSettings(); emit('add-account'); } }, el('span', { class: 'sr-l' }, el('span', { class: 'sr-t sc-blue', text: t('acc.add') })));
+  const addAcc = el('button', { class: 'sr cfh-row', type: 'button', onClick: () => { closeSettings(); emit('add-account'); } }, el('span', { class: 'sr-l' }, el('span', { class: 'sr-t cfh-blue', text: t('acc.add') })));
   addAcc.dataset.k = (t('acc.add') + ' ' + t('sc.accounts')).toLowerCase();
-  const out = el('button', { class: 'sc-out', type: 'button', onClick: () => { closeSettings(); emit('logout'); } }, t('auth.logout'));
+  const out = el('button', { class: 'cfh-out', type: 'button', onClick: () => { closeSettings(); emit('logout'); } }, t('auth.logout'));
   const groups = [
     group(null, null, card),
     group(t('sc.voiceTitle'), null, nsRow, vol, voiceMore),
     group(t('sc.general'), null, navRow('notify', t('set.notify')), navRow('appearance', t('set.appearance'), t('theme.' + (CFG.theme || 'noite'))),
-      navRow('stream', t('set.stream')), navRow('language', t('set.language'), langVal), navRow('update', t('set.update'), null, el('span', { class: 'sc-new', text: t('upd.news') }))),
+      navRow('stream', t('set.stream')), navRow('language', t('set.language'), langVal), navRow('update', t('set.update'), null, el('span', { class: 'cfh-new', text: t('upd.news') }))),
     group(t('sc.accounts'), null, navRow('account', t('set.account'), '@' + me.username), ...accts, addAcc),
   ];
-  const none = el('p', { class: 'sc-none', text: t('sc.none'), hidden: true });
+  const none = el('p', { class: 'cfh-none', text: t('sc.none'), hidden: true });
   q.addEventListener('input', () => {
     const k = q.value.trim().toLowerCase(); let any = false;
     for (const g of groups) {
@@ -647,10 +679,16 @@ function settingsHome() {
     }
     none.hidden = any; out.hidden = !!k;
   });
-  box.append(el('label', { class: 'sc-search' }, icon('i-search', 'ico'), q), ...groups, none, out);
+  box.append(el('label', { class: 'cfh-search' }, icon('i-search', 'ico'), q), ...groups, none, out);
   return box;
 }
 
+/** Computador: Voz e Transmissão numa página só, cada uma com o seu título. */
+function pageCall() {
+  const h = (txt, id) => el('h2', { class: 'set-sub', id, text: txt });
+  return [h(t('set.voice'), 'set-voz'), ...pageVoice(), h(t('set.stream'), 'set-tx'), ...pageStream()];
+}
+const DESK_NAV = [['call', [['voice', 'set.call']]], ['general', [['notify', 'set.notify'], ['appearance', 'set.appearance'], ['language', 'set.language'], ['update', 'set.update']]], ['accounts', [['account', 'sc.acct1']]]];
 const PAGES = [
   ['account', 'i-user', 'set.account', pageAccount], ['profile', 'i-pen', 'set.profile', pageProfile],
   ['voice', 'i-mic', 'set.voice', pageVoice], ['stream', 'i-screen', 'set.stream', pageStream], ['notify', 'i-bell', 'set.notify', pageNotify],
@@ -703,7 +741,9 @@ export function openSettings(page, noAnim) {
   }
   closing = false;
   const mobile = isCompact();
-  if (!page && !mobile) page = 'account';
+  let jump = null;
+  if (!mobile && page === 'stream') { page = 'voice'; jump = 'set-tx'; }
+  if (!page && !mobile) page = 'voice';
   current = page || null;
   if (testStop) testStop();
   devCb = null;
@@ -711,11 +751,16 @@ export function openSettings(page, noAnim) {
   if (page) r.dataset.page = page; else delete r.dataset.page;
   // navegação minimalista: só o nome de cada página (e o valor escolhido, quando ajuda), sem ícones; "Sair" no fim
   const val = (id) => (id === 'appearance' ? t('theme.' + (CFG.theme || 'noite')) : id === 'language' ? (getLang() === 'en' ? 'English' : 'Português') : '');
+  const item = (id, label) => el('button', { class: 'set-item', type: 'button', dataset: { p: id }, 'aria-current': current === id ? 'true' : null, onClick: () => openSettings(id) },
+    el('span', { class: 'lbl', text: t(label) }), val(id) ? el('span', { class: 'val', text: val(id) }) : null, id === 'update' ? el('span', { class: 'set-dot' }) : null, icon('i-chev', 'ico chev'));
   const nav = el('div', { class: 'set-nav' }, el('div', { class: 'set-nav-in' }, el('h2', { text: t('set.title') }),
-    el('div', { class: 'set-list' }, PAGES.map(([id, , label]) => el('button', { class: 'set-item', type: 'button', dataset: { p: id }, 'aria-current': current === id ? 'true' : null, onClick: () => openSettings(id) },
-      el('span', { class: 'lbl', text: t(label) }), val(id) ? el('span', { class: 'val', text: val(id) }) : null, icon('i-chev', 'ico chev')))),
+    el('button', { class: 'set-you', type: 'button', 'aria-current': current === 'profile' ? 'true' : null, onClick: () => openSettings('profile') }, avatar(D.me, 'sm', { decoration: false }),
+      el('span', {}, el('b', { text: displayName(D.me) }), el('small', { text: t('sc.personalize') }))),
+    ...DESK_NAV.map(([g, items]) => el('div', { class: 'set-grp' }, el('span', { class: 'set-gl', text: t('set.g.' + g) }),
+      el('div', { class: 'set-list' }, items.map(([id, label]) => item(id, label))))),
     el('button', { class: 'set-out', type: 'button', onClick: () => { closeSettings(); emit('logout'); } }, t('auth.logout'))));
-  const def = current && PAGES.find((p) => p[0] === current);
+  let def = current && PAGES.find((p) => p[0] === current);
+  if (def && !mobile && def[0] === 'voice') def = ['voice', 'i-mic', 'set.call', pageCall];
   // Barra de cima: no computador só o X (canto); no celular fica fixa com Voltar · título · X e o conteúdo rola embaixo.
   const bar = el('div', { class: 'set-bar' },
     current ? el('button', { class: 'btn sm back-set', type: 'button', onClick: () => openSettings(null) }, icon('i-back'), t('back')) : null,
@@ -725,12 +770,18 @@ export function openSettings(page, noAnim) {
   if (def) main.append(el('div', { class: 'set-page', dataset: { p: def[0] } },
     el('header', { class: 'set-hero' }, el('h1', { text: t(def[2]) })),
     ...def[3]()));
-  r.replaceChildren(bar, mobile && !current ? el('div', { class: 'set-nav sc-wrap' }, settingsHome()) : nav, main);
+  r.replaceChildren(bar, mobile && !current ? el('div', { class: 'set-nav cfh-wrap' }, settingsHome()) : nav, main);
+  if (jump) requestAnimationFrame(() => { const n = document.getElementById(jump); if (n) n.scrollIntoView({ block: 'start' }); });
   document.removeEventListener('keydown', onKey); document.addEventListener('keydown', onKey);
   if (enter === 'in') play(r, 'in');
   else if (ghost) {
-    play(ghost, enter === 'push' ? 'under' : 'leave', () => ghost.remove());
-    play(r, enter);
+    // a foto da página de antes sai no MESMO instante em que a nova termina: se sobrar um quadro com ela por cima
+    // (ela fica acima durante o empurrão), o iPhone mostra um "pisca" da página velha escurecida
+    // empurrão: só sai quando a nova terminar de chegar (antes disso, tirar a foto mostraria a tela inicial por trás);
+    // voltar: sai quando ela mesma terminar de deslizar para fora
+    const drop = () => { if (ghost.isConnected) ghost.remove(); };
+    play(ghost, enter === 'push' ? 'under' : 'leave', enter === 'push' ? null : drop);
+    play(r, enter, enter === 'push' ? drop : null);
   }
 }
 export { copyText, friendLink, displayName, $$, renderCall };

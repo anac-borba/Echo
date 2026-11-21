@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('echoDesktop', {
   shareInfo: () => ipcRenderer.invoke('share:info'),
   shareAudio: () => ipcRenderer.send('share:port'),
   stopShare: () => ipcRenderer.send('share:stop'),
+  sharePrefs: (o) => ipcRenderer.send('share:prefs', o),
   onShareAudioError: (cb) => { ipcRenderer.on('share:audio-error', (_e, m) => cb(m)); },
   // controle remoto (quem transmite)
   askControl: (who) => ipcRenderer.invoke('ctl:ask', who),

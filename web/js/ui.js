@@ -107,7 +107,8 @@ function enterAnim(kind, fromName) {
   const under = prev && prev !== node ? prev : null;
   if (under) { under.hidden = false; under.dataset.leave = k; }
   node.removeAttribute('data-enter'); void node.offsetWidth; node.dataset.enter = k;
-  const anims = node.getAnimations ? node.getAnimations() : [];
+  // espera as duas telas (a que entra e a que sai): esconder uma no meio do caminho é o "pisca" no iPhone
+  const anims = node.getAnimations ? [...node.getAnimations(), ...(under ? under.getAnimations() : [])].filter((a) => a.effect && a.effect.getTiming().iterations !== Infinity) : [];
   const done = () => {
     if (node.dataset.enter !== k) return;      // já começou outra troca
     node.removeAttribute('data-enter');

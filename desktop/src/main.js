@@ -82,7 +82,7 @@ function setupScreenShare() {
       if (!src) { callback({}); return; }
       stopShareAudio();
       const a = choice.audio || { mode: 'none' };
-      share = { id: src.id, kind: src.id.startsWith('screen:') ? 'screen' : 'window', displayId: src.display_id || '', audio: a };
+      share = { id: src.id, kind: src.id.startsWith('screen:') ? 'screen' : 'window', displayId: src.display_id || '', audio: a, preset: choice.preset || null, name: src.name || '' };
       if (a.mode === 'loopback' && request.audioRequested !== false) { callback({ video: src, audio: 'loopback' }); return; }
       callback({ video: src });
       if (a.mode === 'all' || a.mode === 'apps') startShareAudio(a);
@@ -119,16 +119,23 @@ ipcMain.on('share:port', (e) => {
   pcmPort = port1; port1.start();
   e.sender.postMessage('share:port', null, [port2]);
 });
+// o que a página já sabe (qualidade e som de antes), para a janela de escolher abrir com isso marcado
+const PRESET_IDS = ['leve', 'filme', 'jogo', 'qhd', 'uhd', 'nitidez'];
+let sharePrefs = { preset: 'filme', audio: true };
+ipcMain.on('share:prefs', (e, o) => {
+  if (!fromEcho(e) || !o) return;
+  sharePrefs = { preset: PRESET_IDS.includes(o.preset) ? o.preset : 'filme', audio: o.audio !== false };
+});
 ipcMain.on('share:stop', (e) => { if (fromEcho(e)) { stopShareAudio(); share = null; endControl(); } });
-ipcMain.handle('share:info', (e) => (fromEcho(e) && share ? { kind: share.kind, audio: share.audio.mode, appsAudio: share.audio.mode === 'all' || share.audio.mode === 'apps' } : null));
+ipcMain.handle('share:info', (e) => (fromEcho(e) && share ? { kind: share.kind, audio: share.audio.mode, appsAudio: share.audio.mode === 'all' || share.audio.mode === 'apps', preset: share.preset, name: share.name } : null));
 
 /* ── a janela de escolher ── */
 let picking = null, pickerDone = null;
 function openPicker() {
   return new Promise((resolve) => {
     const p = new BrowserWindow({
-      parent: win || undefined, modal: !!win, width: 880, height: 640, resizable: false, minimizable: false, maximizable: false,
-      backgroundColor: '#16161A', title: 'Compartilhar tela', show: false,
+      parent: win || undefined, modal: !!win, width: 820, height: 700, resizable: false, minimizable: false, maximizable: false,
+      backgroundColor: '#1C1C1E', title: 'Transmitir', show: false,
       webPreferences: { preload: path.join(__dirname, 'picker-preload.js'), contextIsolation: true, sandbox: true },
     });
     picking = { win: p, done: false };
@@ -178,12 +185,14 @@ ipcMain.on('picker:choose', (e, v) => {
   const au = v.audio || {};
   const mode = ['all', 'apps', 'none', 'loopback'].includes(au.mode) ? au.mode : 'none';
   const pids = Array.isArray(au.pids) ? au.pids.map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 64) : [];
-  pickerDone({ id: v.id, audio: { mode: mode === 'apps' && !pids.length ? 'none' : mode, pids } });
+  const preset = PRESET_IDS.includes(v.preset) ? v.preset : null;
+  if (preset) sharePrefs.preset = preset;
+  pickerDone({ id: v.id, preset, audio: { mode: mode === 'apps' && !pids.length ? 'none' : mode, pids } });
 });
 ipcMain.on('picker:cancel', (e) => { if (fromPicker(e) && pickerDone) pickerDone(null); });
 // som do computador: Windows sempre; Mac a partir do macOS 14.2 (Darwin 23.2)
 const macAudio = () => { const [maj, min] = require('os').release().split('.').map(Number); return maj > 23 || (maj === 23 && min >= 2); };
-ipcMain.handle('picker:platform', (e) => (fromPicker(e) ? { os: process.platform, audio: process.platform === 'win32' || (isMac && macAudio()), perApp: helper.available() } : null));
+ipcMain.handle('picker:platform', (e) => (fromPicker(e) ? { os: process.platform, audio: process.platform === 'win32' || (isMac && macAudio()), perApp: helper.available(), prefs: sharePrefs } : null));
 
 /* ═════════════ controle remoto ═════════════ */
 let grant = null;          // { who, mouse, keyboard, bounds }

@@ -14,7 +14,7 @@ import { createAudioPopover, refreshDevices, onDevices, currentInputName, curren
 import { openShareUi, qualityLine } from './call-share.js';
 import { uiSound, playEffect, isEffect, unlockAudio, preloadEffects } from './sfx.js';
 import { initFt, syncFt } from './ft.js';
-import { isDesktopApp, shareAudioTrack, shareKind, stopShareAudio } from './desktop.js';
+import { isDesktopApp, shareAudioTrack, shareKind, stopShareAudio, app as deskApp } from './desktop.js';
 
 export const PRESETS = {
   leve:    { w: 1280, h: 720,  fps: 30, kbps: 4000,  hint: 'motion', degr: 'maintain-framerate' },
@@ -498,7 +498,22 @@ export function toggleDeaf() {
   applyMic(); emit('call', callInfo());
 }
 export function applyInputMode() { C.held = false; applyMic(); }
+/** A saída escolhida (fone, caixa) sumiu? Volta para a padrão do sistema, senão o som da ligação não sai.
+ *  No Windows o id do aparelho muda quando o fone Bluetooth reconecta ou o driver atualiza. */
+let sinkChecked = 0;
+async function checkSink() {
+  if (!CFG.spkId || Date.now() - sinkChecked < 3000) return;
+  sinkChecked = Date.now();
+  try {
+    const outs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'audiooutput');
+    if (outs.length && outs.some((d) => d.deviceId) && !outs.some((d) => d.deviceId === CFG.spkId)) {
+      CFG.spkId = ''; saveCfg(); applyOutputPrefs(); toast(t('out.reset'));
+    }
+  } catch { /* ok */ }
+}
+try { navigator.mediaDevices && navigator.mediaDevices.addEventListener('devicechange', () => { sinkChecked = 0; checkSink(); }); } catch { /* ok */ }
 export function applyOutputPrefs() {
+  checkSink();
   // volumes passam pelo mixer (funciona no iPhone e permite o equilíbrio automático); sem ele, direto no elemento
   mixerSet({ voice: CFG.volVoice, film: CFG.volScreen, auto: CFG.autoMix !== false, sink: CFG.spkId || '' });
   if (!mixerActive()) { try { els.remoteMic.volume = Math.min(1, CFG.volVoice); els.video.volume = Math.min(1, CFG.volScreen); } catch {} }
@@ -525,19 +540,28 @@ const shareNoAudio = /Firefox\//.test(UA) || (/Safari\//.test(UA) && !/Chrome|Ch
 const IOS_APP = IOS && (navigator.standalone === true || matchMedia('(display-mode: standalone)').matches);
 const canShare = () => !!navigator.mediaDevices?.getDisplayMedia && !IOS;
 
+/** App do computador novo: a janela de escolher do app já tem fonte, qualidade e som; não precisa da daqui antes. */
+const deskPicker = () => isDesktopApp && deskApp && typeof deskApp.sharePrefs === 'function';
+function deskShare(switching) {
+  const sh = CFG.share;
+  try { deskApp.sharePrefs({ preset: sh.preset, audio: sh.audio !== false && sh.audioMode !== 'none' }); } catch { /* ok */ }
+  beginShare({ surface: SURFACES.includes(sh.surface) ? sh.surface : 'monitor', preset: PRESETS[sh.preset] ? sh.preset : 'filme', audioMode: 'app', switching });
+}
 export function openShareDialog() {
   if (C.screen) { stopShare(true); return; }
   if (!canShare()) { toast(IOS ? t('dock.noshare.ios') : t('dock.noshare')); return; }
+  if (deskPicker()) { deskShare(false); return; }
   openShareUi({ PRESETS, peerName, isMac, noAudio: shareNoAudio, supported: canShare(), switching: false, start: (o) => beginShare(o) });
 }
 function switchSource() {
   if (!C.screen) return;
+  if (deskPicker()) { deskShare(true); return; }
   openShareUi({ PRESETS, peerName, isMac, noAudio: shareNoAudio, supported: canShare(), switching: true, start: (o) => beginShare({ ...o, switching: true }) });
 }
 
 async function beginShare({ surface, preset: presetId, audioMode, apps = [], switching = false }) {
   const P = PRESETS[presetId];
-  const wantAudio = audioMode !== 'none';
+  let wantAudio = audioMode !== 'none';
   const opts = {
     video: { frameRate: { ideal: P.fps, max: P.fps }, width: { ideal: P.w }, height: { ideal: P.h }, cursor: 'always', displaySurface: surface },
     audio: wantAudio ? { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 2, sampleRate: 48000, suppressLocalAudioPlayback: true, restrictOwnAudio: true } : false,
@@ -553,18 +577,25 @@ async function beginShare({ surface, preset: presetId, audioMode, apps = [], swi
     catch { toast(t('share.fail')); return; }
   }
   // App para computador: o som dos apps escolhidos vem do programa auxiliar (sem o som da própria ligação)
-  let ctl = false;
+  let ctl = false, deskName = '';
   if (isDesktopApp) {
+    // no app, a janela do próprio Echo escolhe a fonte, a qualidade e o som: segue o que ela disse
+    let info = null; try { info = await deskApp.shareInfo(); } catch { /* app antigo */ }
+    if (info && info.preset && PRESETS[info.preset]) presetId = info.preset;
+    if (info && info.audio === 'none') { wantAudio = false; audioMode = 'none'; for (const x of stream.getAudioTracks()) { stream.removeTrack(x); x.stop(); } }
+    if (info && info.name && info.kind === 'window') deskName = info.name;
+    if (info && deskPicker()) { CFG.share = { ...CFG.share, preset: presetId, audio: wantAudio, audioMode: wantAudio ? 'app' : 'none' }; saveCfg(); }
     const tr = wantAudio ? await shareAudioTrack() : null;
     if (tr) { for (const x of stream.getAudioTracks()) { stream.removeTrack(x); x.stop(); } stream.addTrack(tr); }
-    ctl = (await shareKind()) === 'screen';
+    ctl = (info ? info.kind : await shareKind()) === 'screen';
   }
   void apps;
-  if (switching && C.screen) { C.screen.ctl = ctl; await swapScreenSource(stream, presetId, audioMode, surface); return; }
+  if (switching && C.screen) { C.screen.ctl = ctl; C.screen.deskName = deskName; await swapScreenSource(stream, presetId, audioMode, surface); return; }
   const v = stream.getVideoTracks()[0], a = stream.getAudioTracks()[0] || null;
-  v.contentHint = P.hint; if (a) a.contentHint = 'music';
+  if (presetId !== Object.keys(PRESETS).find((k) => PRESETS[k] === P)) { const Q = PRESETS[presetId]; try { await v.applyConstraints({ frameRate: { ideal: Q.fps, max: Q.fps }, width: { ideal: Q.w }, height: { ideal: Q.h } }); } catch { /* ok */ } }
+  v.contentHint = PRESETS[presetId].hint; if (a) a.contentHint = 'music';
   const got = (v.getSettings && v.getSettings().displaySurface) || surface;
-  C.screen = { stream, v, a, preset: presetId, audioMode, wantAudio, surface: got, vSender: null, aSender: null, ctl };
+  C.screen = { stream, v, a, preset: presetId, audioMode, wantAudio, surface: got, vSender: null, aSender: null, ctl, t0: Date.now(), deskName };
   v.addEventListener('ended', () => { if (C.screen && C.screen.v === v) stopShare(true); });
   sendMeta(); addScreenToPc(); renderMode();
   emit('call', callInfo());
@@ -900,51 +931,109 @@ function setAspect(host, video) {
   host.style.setProperty('--arn', (w / h).toFixed(4));
 }
 
-function renderShareQuality() {
+/* ───────────── a pílula de transmissão (barra) e o menu dela ─────────────
+   Tudo da transmissão num lugar só: miniatura ao vivo, nome do que vai, qualidade e som; clicou, abre o menu. */
+let sharePopOpen = false, qOpen = false;
+function shareFacts() {
   const sc = C.screen;
-  if (!sc) return;
-  els.shQ.replaceChildren(...Object.keys(PRESETS).map((id) => el('button', { type: 'button', role: 'radio', 'aria-checked': String(id === sc.preset), onClick: () => changeQuality(id) }, t('preset.' + id))));
-  els.shQLine.textContent = qualityLine(PRESETS[sc.preset]);
-}
-
-function renderShareInfo() {
-  const sc = C.screen;
-  if (!sc || !els.shWhat) return;
   const st = sc.v.getSettings ? sc.v.getSettings() : {};
   const surf = st.displaySurface || sc.surface;
-  els.shSees.textContent = t('sh.sees', { name: peerName() });
-  els.shWhat.textContent = surfaceName(surf);
   const lab = String(sc.v.label || '');
-  els.shWhat2.textContent = sc.mediaName ? sc.mediaName : lab && !/^(screen|window|web-contents-media-stream):/i.test(lab) ? lab : `${st.width || '?'}×${st.height || '?'}`;
-  els.shWhatIco.setAttribute('href', '#' + ({ browser: 'r-tab', window: 'r-win' }[surf] || 'r-scr'));
-  renderShareQuality();
-  // áudio
-  let title, desc;
-  if (!sc.a) { title = t('sh.a.none'); desc = t('sh.a.none.d'); }
-  else if (sc.audioMode === 'media') { title = t('sh.a.media'); desc = t('sh.a.media.d', { name: peerName() }); }
-  else if (sc.audioMode === 'system') { title = t('sh.a.system'); desc = t('sh.a.system.d', { name: peerName() }); }
-  else if (surf === 'browser') { title = t('sh.a.app.browser'); desc = t('sh.a.app.d', { name: peerName() }); }
-  else { title = t('sh.a.app.window'); desc = t('sh.a.app.window.d', { name: peerName() }); }
-  els.shAT.textContent = title; els.shAD.textContent = desc;
-  els.btnShareAudio.disabled = !sc.a;
-  els.btnShareAudio.textContent = !sc.a ? t('sh.a.nosound') : sc.a.enabled ? t('sh.a.on') : t('sh.a.off');
+  const name = sc.mediaName || sc.deskName || (lab && lab.length < 80 && !/^(screen|window|web-contents-media-stream):/i.test(lab) && !/^[\w+/=-]{16,}$/.test(lab) ? lab : surfaceName(surf));
+  const P = PRESETS[sc.preset] || PRESETS.filme;
+  const res = P.h >= 2160 ? '4K' : P.h + 'p';
   let warn = '';
-  if (sc.a) {
-    const as = sc.a.getSettings ? sc.a.getSettings() : {};
-    if (surf === 'monitor' && !as.restrictOwnAudio) warn = t('share.warn.echo');
-  } else if (sc.wantAudio) warn = noAudioMsg();
-  els.sharingWarn.hidden = !warn; els.sharingWarn.textContent = warn;
-  // chips com números reais
-  const s = C.stat || {};
-  els.shCPath.textContent = C.pathKind === 'relay' ? t('sh.relay') : t('sh.direct');
-  els.shCLoss.textContent = typeof s.lossOut === 'number' ? t('sh.loss', { n: s.lossOut < 10 ? s.lossOut.toFixed(s.lossOut < 1 ? 0 : 1) : Math.round(s.lossOut) }) : '–';
-  els.shCRate.textContent = typeof s.outMbps === 'number' ? t('watch.mbps', { n: s.outMbps.toFixed(s.outMbps < 10 ? 1 : 0) }) : '–';
+  if (sc.a) { const as = sc.a.getSettings ? sc.a.getSettings() : {}; if (surf === 'monitor' && !as.restrictOwnAudio && !isDesktopApp) warn = t('share.warn.echo'); }
+  else if (sc.wantAudio) warn = noAudioMsg();
+  return { surf, name, P, res, warn, sound: !!(sc.a && sc.a.enabled) };
+}
+function renderShareInfo() {
+  const sc = C.screen;
+  if (!sc || !els.pill) return;
+  const f = shareFacts();
+  els.pillT.textContent = f.name;
+  els.pillD.textContent = [f.res, f.P.fps, sc.a ? (sc.a.enabled ? t('shp.withsound') : t('shp.nosound')) : t('shp.nosound')].join(' · ');
+  els.shSrc.textContent = `${surfaceName(f.surf)} · ${f.name === surfaceName(f.surf) ? f.res + ' · ' + f.P.fps : f.name}`;
+  if (sharePopOpen) buildSharePop();
   // cartões das duas pessoas
   els.pcMeAv.replaceChildren(avatar(D.me, 'fill'));
   els.pcMeSub.textContent = currentInputName(rawTrack(C.mic));
   els.pcHerAv.replaceChildren(avatar(peerUser(), 'fill'));
   els.pcHerName.textContent = peerName();
   els.pcHerSub.textContent = [C.peerPresent ? t('sh.watching') : t('sh.incall'), C.rtt !== null ? C.rtt + ' ms' : null].filter(Boolean).join(' · ');
+}
+function attachPill() {
+  const sc = C.screen;
+  const v = els.pillV;
+  if (!sc || sc.media) { v.srcObject = null; v.hidden = !!sc; return; }
+  v.hidden = false;
+  if (v.srcObject !== sc.stream) v.srcObject = sc.stream;
+  v.play().catch(() => {});
+}
+function buildSharePop() {
+  const sc = C.screen;
+  if (!sc) { closeSharePop(); return; }
+  const f = shareFacts();
+  const s = C.stat || {};
+  const pv = el('video', { muted: true, playsinline: true, autoplay: true, 'aria-hidden': 'true' });
+  pv.muted = true;
+  if (!sc.media) { pv.srcObject = sc.stream; pv.play().catch(() => {}); }
+  const mins = sc.t0 ? Math.max(0, Math.floor((Date.now() - sc.t0) / 1000)) : 0;
+  const dur = `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, '0')}`;
+  const row = (ic, label, extra, onClick, cls = '') => el('button', { class: 'shm ' + cls, type: 'button', onClick }, icon(ic, 'i s17'), el('span', { class: 'shm-l', text: label }), extra || null);
+  const qList = el('div', { class: 'shq', role: 'radiogroup', 'aria-label': t('share.quality'), hidden: !qOpen },
+    ...Object.keys(PRESETS).map((id) => el('button', { type: 'button', role: 'radio', 'aria-checked': String(id === sc.preset), onClick: () => { qOpen = false; changeQuality(id); } },
+      el('b', { text: t('preset.' + id) }), el('small', { text: t('preset.' + id + '.d') }))));
+  const soundSw = el('button', { class: 'shsw', type: 'button', role: 'switch', 'aria-checked': String(f.sound), 'aria-label': t('shp.sound'), disabled: !sc.a,
+    onClick: () => { if (sc.a) { sc.a.enabled = !sc.a.enabled; renderShareInfo(); } } }, el('span'));
+  const stats = [C.pathKind === 'relay' ? t('sh.relay') : t('sh.direct'),
+    typeof s.lossOut === 'number' ? t('sh.loss', { n: s.lossOut < 10 ? s.lossOut.toFixed(s.lossOut < 1 ? 0 : 1) : Math.round(s.lossOut) }) : null,
+    typeof s.outMbps === 'number' ? t('watch.mbps', { n: s.outMbps.toFixed(s.outMbps < 10 ? 1 : 0) }) : null].filter(Boolean).join(' · ');
+  els.sharePop.replaceChildren(
+    el('div', { class: 'shp-pv' }, sc.media ? icon('r-scr', 'i') : pv,
+      el('span', { class: 'rchip glass live-chip' }, el('span', { class: 'rdot red' }), el('span', { text: C.peerPresent ? t('shp.live1', { name: peerName() }) : t('shp.live0') }))),
+    el('div', { class: 'shp-h' }, el('b', { text: f.name }), el('small', { text: t('shp.for', { d: dur }) })),
+    sc.media ? null : row('r-swap', t('shp.switch'), null, () => { closeSharePop(); switchSource(); }),
+    row('r-tune', t('share.quality'), el('span', { class: 'shm-v' }, el('span', { text: `${t('preset.' + sc.preset)} · ${f.res} ${f.P.fps}` }), icon('r-up', 'i s12 shm-ch')), () => { qOpen = !qOpen; buildSharePop(); }, qOpen ? 'open' : ''),
+    qList,
+    el('div', { class: 'shm' }, icon('r-vol', 'i s17'), el('span', { class: 'shm-l' }, el('span', { text: t('shp.sound') }), !sc.a ? el('small', { text: t('sh.a.nosound') }) : null), soundSw),
+    f.warn ? el('p', { class: 'shp-warn', text: f.warn }) : null,
+    el('p', { class: 'shp-st', text: stats }),
+    el('div', { class: 'shp-sep' }),
+    row('r-stop', t('shp.stop'), null, () => { closeSharePop(); stopShare(true); }, 'danger'));
+  placeSharePop();
+}
+function placeSharePop() {
+  const pop = els.sharePop;
+  if (matchMedia('(max-width: 820px)').matches) { pop.style.removeProperty('left'); pop.style.removeProperty('bottom'); return; }
+  const r = els.room.getBoundingClientRect(), a = els.pill.getBoundingClientRect(), d = els.dock.getBoundingClientRect();
+  const w = pop.offsetWidth || 340;
+  pop.style.setProperty('left', Math.round(Math.max(12, Math.min(a.left + a.width / 2 - r.left - w / 2, r.width - w - 12))) + 'px');
+  pop.style.setProperty('bottom', Math.round(r.bottom - d.top + 12) + 'px');
+}
+const onSharePopKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); closeSharePop(); } };
+const onSharePopDown = (e) => { if (!els.sharePop.contains(e.target) && !els.pill.contains(e.target)) closeSharePop(); };
+function openSharePop() {
+  if (!C.screen) return;
+  sharePopOpen = true; qOpen = false;
+  els.sharePop.hidden = false;
+  buildSharePop();
+  els.pill.setAttribute('aria-expanded', 'true');
+  document.addEventListener('keydown', onSharePopKey, true);
+  document.addEventListener('pointerdown', onSharePopDown, true);
+  window.addEventListener('resize', placeSharePop);
+  els.sharePop.focus({ preventScroll: true });
+}
+function closeSharePop() {
+  if (!sharePopOpen) return;
+  sharePopOpen = false;
+  els.sharePop.hidden = true;
+  els.sharePop.querySelectorAll('video').forEach((v) => { v.srcObject = null; });
+  els.sharePop.replaceChildren();
+  els.pill.setAttribute('aria-expanded', 'false');
+  document.removeEventListener('keydown', onSharePopKey, true);
+  document.removeEventListener('pointerdown', onSharePopDown, true);
+  window.removeEventListener('resize', placeSharePop);
 }
 
 function attachPreview() {
@@ -1005,7 +1094,7 @@ export async function shareMedia(src, name) {
   if (C.screen) stopShare(false);
   const vt = stream.getVideoTracks()[0], at = stream.getAudioTracks()[0] || null;
   vt.contentHint = 'motion'; if (at) at.contentHint = 'music';
-  C.screen = { stream, v: vt, a: at, preset: 'filme', audioMode: 'media', wantAudio: true, surface: 'file', media: v, mediaName: name || (isUrl ? src : src.name),
+  C.screen = { t0: Date.now(), stream, v: vt, a: at, preset: 'filme', audioMode: 'media', wantAudio: true, surface: 'file', media: v, mediaName: name || (isUrl ? src : src.name),
     stopMedia: () => { cleanup(); try { v.pause(); v.removeAttribute('src'); v.load(); v.remove(); } catch {} if (!isUrl) URL.revokeObjectURL(url); } };
   v.addEventListener('ended', () => { /* fica parado no fim; quem transmite decide parar */ });
   sendMeta(); addScreenToPc(); renderMode();
@@ -1056,6 +1145,9 @@ function renderMode() {
   els.btnScreen.classList.toggle('off', off);
   els.btnScreen.setAttribute('aria-disabled', String(off));
   els.btnScreen.title = C.screen ? t('sh.stop') : off ? (IOS ? t('dock.noshare.ios') : t('dock.noshare')) : '';
+  els.dkPill.hidden = !C.screen;
+  els.dock.classList.toggle('shar', !!C.screen);
+  if (C.screen) { attachPill(); renderShareInfo(); } else { closeSharePop(); attachPill(); }
   els.btnPip.hidden = !watching; els.btnPipV.disabled = !watching;
   els.btnAct.hidden = !ACTIVITIES_ENABLED;
   renderHeader(); renderChip(); renderWatchInfo();
@@ -1183,8 +1275,7 @@ export function initCall(events) {
     devMic: 'dev-mic', devOut: 'dev-out', devMode: 'dev-mode',
     cinema: 'cinema', video: 'screen-video', vidCard: 'vid-card', liveText: 'live-text', btnPipV: 'btn-pip-v', btnFull: 'btn-full', btnUnmuteVideo: 'btn-unmute-video',
     whoAv: 'who-av', whoName: 'who-name', whoInfo: 'who-info', vols: 'vols', volFilm: 'vol-film', volVoice: 'vol-voice', outFilm: 'out-film', outVoice: 'out-voice', volNote: 'vol-note', qChip: 'q-chip',
-    sharing: 'sharing', sharePrev: 'share-preview', shSees: 'sh-sees', shWhat: 'sh-what', shWhat2: 'sh-what2', shWhatIco: 'sh-what-ico', btnShareSwitch: 'btn-share-switch', shQ: 'sh-q', shQLine: 'sh-qline',
-    shAT: 'sh-a-t', shAD: 'sh-a-d', btnShareAudio: 'btn-share-audio', sharingWarn: 'sharing-warn', shCPath: 'sh-c-path', shCLoss: 'sh-c-loss', shCRate: 'sh-c-rate', btnShareStop: 'btn-share-stop',
+    sharing: 'sharing', sharePrev: 'share-preview', shSrc: 'sh-src', dkPill: 'dk-pill', pill: 'sh-pill', pillV: 'sh-pill-v', pillT: 'sh-pill-t', pillD: 'sh-pill-d', pillStop: 'sh-pill-stop', sharePop: 'share-pop',
     pcMeAv: 'pc-me-av', pcMeSub: 'pc-me-sub', pcMeWave: 'pc-me-wave', pcHerAv: 'pc-her-av', pcHerName: 'pc-her-name', pcHerSub: 'pc-her-sub', pcHerWave: 'pc-her-wave',
     statsBox: 'stats', dock: 'dock', spMic: 'sp-mic', spDeaf: 'sp-deaf', btnMic: 'btn-mic', btnMicOpts: 'btn-mic-opts', btnDeaf: 'btn-deaf', btnDeafOpts: 'btn-deaf-opts',
     btnPtt: 'btn-ptt', btnAct: 'btn-act', btnScreen: 'btn-screen', btnPip: 'btn-pip', btnGear: 'btn-gear', btnLeave: 'btn-leave', btnBack: 'room-back', pop: 'call-pop', scrim: 'pop-scrim',
@@ -1220,9 +1311,8 @@ export function initCall(events) {
   els.btnUnmuteVideo.addEventListener('click', () => { mixerUnlock(); els.video.muted = mixerActive() || C.deaf; els.video.play().catch(() => {}); els.btnUnmuteVideo.hidden = true; });
   bindMixPop();
   els.video.addEventListener('dblclick', toggleFull);
-  els.btnShareStop.addEventListener('click', () => stopShare(true));
-  els.btnShareSwitch.addEventListener('click', switchSource);
-  els.btnShareAudio.addEventListener('click', () => { const sc = C.screen; if (sc && sc.a) { sc.a.enabled = !sc.a.enabled; renderShareInfo(); } });
+  els.pillStop.addEventListener('click', () => { closeSharePop(); stopShare(true); });
+  els.pill.addEventListener('click', () => (sharePopOpen ? closeSharePop() : openSharePop()));
   bindVolumes();
 
   // o formato do vídeo manda no tamanho do cartão; trocar de resolução não reinicia nada

@@ -52,7 +52,9 @@ dialog[open] { animation: m-pop var(--m-base) var(--spring) both, m-fade var(--m
 dialog[open]::backdrop { animation: m-fade var(--m-base) ease-out both; }
 @keyframes m-pop { from { transform: scale(.94) translateY(6px); } }
 .popover { animation: m-pop var(--m-base) var(--spring) both, m-fade 120ms ease-out both; }
-.settings { animation: m-fade var(--m-fast) ease-out both; }
+/* as Configurações entram só pela animação própria (data-anim): sem uma animação base que recomece ao terminar
+   cada troca de página (recomeçava do transparente e a tela inicial piscava por trás) */
+.settings { animation: none; }
 
 /* ---------- avisos: sobem com mola; saem rápido ---------- */
 .toast { animation: m-toast var(--m-base) var(--spring) both, m-fade 120ms ease-out both; }

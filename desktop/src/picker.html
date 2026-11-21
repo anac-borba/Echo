@@ -3,36 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:">
-<title>Compartilhar tela</title>
+<title>Transmitir</title>
 <link rel="stylesheet" href="picker.css">
 </head>
 <body>
 <main class="pk" aria-labelledby="pk-t">
   <header class="pk-h">
-    <h1 id="pk-t">Compartilhar tela</h1>
-    <button class="x" id="close" type="button" aria-label="Fechar"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+    <h1 id="pk-t">Transmitir</h1>
+    <div class="seg" role="tablist" aria-label="O que mostrar">
+      <button type="button" role="tab" id="tab-screen" aria-selected="true">Telas</button>
+      <button type="button" role="tab" id="tab-window" aria-selected="false">Janelas</button>
+    </div>
+    <button class="x" id="close" type="button" aria-label="Fechar"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
   </header>
-  <div class="pk-b">
-    <section class="pk-l" aria-label="O que mostrar">
-      <div class="seg" role="tablist">
-        <button type="button" role="tab" id="tab-screen" aria-selected="true">Telas</button>
-        <button type="button" role="tab" id="tab-window" aria-selected="false">Janelas</button>
-      </div>
-      <div class="grid" id="grid" role="listbox" aria-label="Telas"></div>
-    </section>
-    <section class="pk-r" aria-label="Som">
-      <div class="row-h">
-        <h2>Som</h2>
-        <button type="button" role="switch" id="audio" class="sw" aria-checked="true" aria-label="Levar o som do computador"><span></span></button>
-      </div>
-      <p class="mut" id="audio-d">Escolha quais apps vão junto. Você continua ouvindo todos.</p>
-      <ul class="apps" id="apps" aria-label="Apps"></ul>
-      <p class="mut small" id="audio-na" hidden>Neste computador o som ainda não pode ir junto. A tela vai sem som.</p>
-    </section>
-  </div>
+  <div class="grid" id="grid" role="listbox" aria-label="Telas"></div>
+  <section class="card" aria-label="Qualidade e som">
+    <div class="row">
+      <span class="lab">Qualidade</span>
+      <div class="seg sm" id="q" role="radiogroup" aria-label="Qualidade"></div>
+    </div>
+    <div class="row">
+      <span class="lab">Levar o som junto<small id="audio-d">Só o som do que você transmite, sem a sua voz duplicada.</small></span>
+      <button type="button" role="switch" id="audio" class="sw" aria-checked="true" aria-label="Levar o som junto"><span></span></button>
+    </div>
+    <button type="button" class="row more" id="apps-t" aria-expanded="false" hidden><span class="lab">Quais apps<small id="apps-v">Todos, menos o Echo</small></span><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+    <ul class="apps" id="apps" aria-label="Apps" hidden></ul>
+    <p class="mut" id="audio-na" hidden>Neste computador o som ainda não pode ir junto. A tela vai sem som.</p>
+  </section>
   <footer class="pk-f">
-    <button type="button" class="b sec" id="cancel">Cancelar</button>
-    <button type="button" class="b main" id="share" disabled>Compartilhar</button>
+    <span class="mut" id="q-line"></span>
+    <div class="acts">
+      <button type="button" class="b sec" id="cancel">Cancelar</button>
+      <button type="button" class="b main" id="share" disabled>Transmitir</button>
+    </div>
   </footer>
 </main>
 <script src="picker.js"></script>
